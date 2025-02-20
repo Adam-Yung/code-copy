@@ -1,0 +1,11 @@
+"activationEvents": [
+  "onCommand:extension.copyFromStdin"
+],
+"contributes": {
+  "commands": [
+    {
+      "command": "extension.copyFromStdin",
+      "title": "Copy from Stdin"
+    }
+  ]
+}
