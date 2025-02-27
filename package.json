@@ -1,21 +1,86 @@
 {
-  "name": "code-copy",
-  "displayName": "code-copy",
-  "description": "Copy to clipboard from VSCode integrated terminal over SSH",
-  "version": "0.0.1",
-  "engines": {
-    "vscode": "^1.97.0"
+  "name": "vscode-copy-from-terminal",
+  "displayName": "Copy/Pipe From Terminal",
+  "description": "Copy/pipe from terminal to VS Code editor",
+  "version": "0.0.9",
+  "publisher": "babakks",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/babakks/vscode-copy-from-terminal"
   },
+  "engines": {
+    "vscode": "^1.60.0"
+  },
+  "os": [
+    "linux",
+    "darwin"
+  ],
   "categories": [
     "Other"
   ],
-  "activationEvents": [],
+  "keywords": [
+    "terminal",
+    "copy",
+    "pipe",
+    "stdout",
+    "stdin",
+    "editor",
+    "shell",
+    "bash",
+    "zsh",
+    "productivity",
+    "linux",
+    "mac",
+    "macos",
+    "unix",
+    "watch",
+    "tee",
+    "cp",
+    "tee2code",
+    "cp2code"
+  ],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
+  "icon": "images/icon.png",
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
       {
-        "command": "code-copy.helloWorld",
-        "title": "Hello World"
+        "command": "vscode-copy-from-terminal.toggle",
+        "title": "Copy From Terminal: Toggle (Enable/Disable)",
+        "shortTitle": "Toggle"
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Copy/Pipe From Terminal",
+        "properties": {
+          "vscode-copy-from-terminal.enabled": {
+            "title": "Enabled",
+            "description": "Enable/Disable Copy/Pipe From Terminal",
+            "type": "boolean",
+            "default": true
+          },
+          "vscode-copy-from-terminal.tempDirectory": {
+            "title": "Temp directory",
+            "description": "Temp directory for storing copied/piped data",
+            "type": "string",
+            "default": ""
+          },
+          "vscode-copy-from-terminal.alias": {
+            "title": "Alias",
+            "description": "Shell function alias",
+            "type": "string",
+            "default": "cp2code"
+          },
+          "vscode-copy-from-terminal.aliasForTee": {
+            "title": "Alias (for `tee`)",
+            "description": "Shell function alias (for `tee`)",
+            "type": "string",
+            "default": "tee2code"
+          }
+        }
       }
     ]
   },
@@ -24,18 +89,20 @@
     "compile": "tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src",
-    "test": "vscode-test"
+    "lint": "eslint src --ext ts",
+    "test": "node ./out/test/runTest.js"
   },
   "devDependencies": {
-    "@types/vscode": "^1.97.0",
-    "@types/mocha": "^10.0.10",
-    "@types/node": "20.x",
-    "@typescript-eslint/eslint-plugin": "^8.22.0",
-    "@typescript-eslint/parser": "^8.22.0",
-    "eslint": "^9.19.0",
-    "typescript": "^5.7.3",
-    "@vscode/test-cli": "^0.0.10",
-    "@vscode/test-electron": "^2.4.1"
+    "@types/vscode": "^1.60.0",
+    "@types/glob": "^7.2.0",
+    "@types/mocha": "^9.1.0",
+    "@types/node": "14.x",
+    "@typescript-eslint/eslint-plugin": "^5.16.0",
+    "@typescript-eslint/parser": "^5.16.0",
+    "@vscode/test-electron": "^2.1.3",
+    "eslint": "^8.11.0",
+    "glob": "^7.2.0",
+    "mocha": "^9.2.2",
+    "typescript": "^4.5.5"
   }
 }
