@@ -1,12 +1,12 @@
 {
   "name": "terminal-to-clipboard",
-  "displayName": "Copy/Pipe From Terminal",
-  "description": "Copy/pipe from terminal to VS Code editor",
-  "version": "0.0.9",
+  "displayName": "Copy to Clipboard From Terminal",
+  "description": "Copy to System Clipboard From Terminal",
+  "version": "0.0.1",
   "publisher": "ayung",
   "repository": {
     "type": "git",
-    "url": "https://github.com/babakks/terminal-to-clipboard"
+    "url": "https://github.com/Adam-Yung/code-copy.git"
   },
   "engines": {
     "vscode": "^1.60.0"
@@ -55,17 +55,17 @@
     ],
     "configuration": [
       {
-        "title": "Copy/Pipe From Terminal",
+        "title": "Copy to Clipboard From Terminal",
         "properties": {
           "terminal-to-clipboard.enabled": {
             "title": "Enabled",
-            "description": "Enable/Disable Copy/Pipe From Terminal",
+            "description": "Enable/Disable Copy To Clipboard From Terminal",
             "type": "boolean",
             "default": true
           },
           "terminal-to-clipboard.tempDirectory": {
             "title": "Temp directory",
-            "description": "Temp directory for storing copied/piped data",
+            "description": "Temp directory for storing copied data",
             "type": "string",
             "default": ""
           },
