@@ -29,7 +29,7 @@ export async function turnOnIfEnabled(context: vscode.ExtensionContext) {
 export async function toggle(context: vscode.ExtensionContext) {
     const newState = !Config.isEnabled;
     newState ? turnOn(context) : turnOff(context);
-    vscode.workspace.getConfiguration('vscode-copy-from-terminal').update('enabled', newState, true);
+    vscode.workspace.getConfiguration('terminal-to-clipboard').update('enabled', newState, true);
     vscode.window.showInformationMessage(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
 }
 
@@ -65,7 +65,8 @@ async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir
 
     // terminal.sendText(payload + '; echo -e "\\x1b[2F\\x1b[0K\\x1b[B\\x1b[2K"', true);
     // Hide the ugly init script from terminal buffer
-    terminal.sendText(payload + '; echo -e "\\x1b[F\\x1b[0K\\x1b[F"', true);
+    // terminal.sendText(payload + '; echo -e "\\x1b[2F\\x1b[0K\\x1b[B\\x1b[0K"', true);
+    terminal.sendText(payload + '; echo -e "\\x1b[2F\\x1b[0K"', true);
     // terminal.sendText("clear", true);
 }
 
