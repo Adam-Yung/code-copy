@@ -1,5 +1,5 @@
 EXTENSION_INSTANCE_ID="$1"
-COPY_TO_VSCODE_TEMP_DIR="$2/"
+COPY_TO_VSCODE_TEMP_DIR="$2"
 cp_alias="$3"
 tee_alias="$4"
 
@@ -17,7 +17,13 @@ _get_temp_file() {
     tempfname="$dt-$EXTENSION_INSTANCE_ID.tmp"
     echo "$COPY_TO_VSCODE_TEMP_DIR/$tempfname"
 }
-_cp2code() { cat > "$(_get_temp_file)"; }
+function _cp2code() {
+    if [[ -t 0 ]]; then
+        printf "This command is intended to be piped only\n" >&2
+        return 1
+    fi
+    cat > "$(_get_temp_file)"
+}
 _tee2code() { tee "$(_get_temp_file)"; }
 
 alias "${cp_alias}=_cp2code"

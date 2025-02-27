@@ -38,7 +38,7 @@ exports.escapeShell = escapeShell;
 const fs = __importStar(require("fs"));
 function ensureDirectoryExists(path) {
     if (!fs.existsSync(path)) {
-        fs.mkdirSync(path);
+        fs.mkdirSync(path, { recursive: true });
     }
 }
 function escapeShell(cmd) {

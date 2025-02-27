@@ -56,7 +56,7 @@ export function turnOff(context: vscode.ExtensionContext) {
     disposeOnDidOpenTerminalHook();
 
     if (tmpdir && fs.existsSync(tmpdir)) {
-        fs.rmdirSync(tmpdir, { recursive: true});
+        fs.rmSync(tmpdir, { recursive: true});
     }
 }
 
@@ -105,10 +105,10 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
         fileContent = fileContent.trim();
         await vscode.env.clipboard.writeText(fileContent);
 
-        if (fileContent.length > 20) {
-            fileContent = fileContent.substring(0, 20) + '...';
+        if (fileContent.length > 25) {
+            fileContent = fileContent.substring(0, 25) + '...';
         }
-        vscode.window.showInformationMessage('Copied to the clipboard: ' + fileContent);
+        vscode.window.showInformationMessage('Copied to clipboard: ' + fileContent);
     });
     _watcher = watcher;
 }

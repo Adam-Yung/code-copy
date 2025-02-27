@@ -84,7 +84,7 @@ function turnOff(context) {
     disposeWatcher();
     disposeOnDidOpenTerminalHook();
     if (tmpdir && fs.existsSync(tmpdir)) {
-        fs.rmdirSync(tmpdir, { recursive: true });
+        fs.rmSync(tmpdir, { recursive: true });
     }
 }
 async function execPayload(terminal, instanceId, tmpdir, cpAlias, teeAlias) {
@@ -126,10 +126,10 @@ function watch(context, instance, tmpdir) {
         let fileContent = await fs.promises.readFile(filepath, 'utf-8');
         fileContent = fileContent.trim();
         await vscode.env.clipboard.writeText(fileContent);
-        if (fileContent.length > 20) {
-            fileContent = fileContent.substring(0, 20) + '...';
+        if (fileContent.length > 25) {
+            fileContent = fileContent.substring(0, 25) + '...';
         }
-        vscode.window.showInformationMessage('Copied to the clipboard: ' + fileContent);
+        vscode.window.showInformationMessage('Copied to clipboard: ' + fileContent);
     });
     _watcher = watcher;
 }
