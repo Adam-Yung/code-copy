@@ -37,16 +37,16 @@ exports.Config = void 0;
 const vscode = __importStar(require("vscode"));
 class Config {
     static get isEnabled() {
-        return vscode.workspace.getConfiguration('vscode-copy-from-terminal').get('enabled', true);
+        return vscode.workspace.getConfiguration('terminal-to-clipboard').get('enabled', true);
     }
     static get tempDirectory() {
-        return vscode.workspace.getConfiguration('vscode-copy-from-terminal').get('tempDirectory', '');
+        return vscode.workspace.getConfiguration('terminal-to-clipboard').get('tempDirectory', '');
     }
     static get cpAlias() {
-        return vscode.workspace.getConfiguration('vscode-copy-from-terminal').get('alias', '');
+        return vscode.workspace.getConfiguration('terminal-to-clipboard').get('alias', '');
     }
     static get teeAlias() {
-        return vscode.workspace.getConfiguration('vscode-copy-from-terminal').get('aliasForTee', '');
+        return vscode.workspace.getConfiguration('terminal-to-clipboard').get('aliasForTee', '');
     }
 }
 exports.Config = Config;

@@ -9,7 +9,7 @@ export function activate(context: vscode.ExtensionContext) {
     turnOnIfEnabled(context);
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('vscode-copy-from-terminal.toggle', () => toggle(context)),
+        vscode.commands.registerCommand('terminal-to-clipboard.toggle', () => toggle(context)),
     );
 }
 

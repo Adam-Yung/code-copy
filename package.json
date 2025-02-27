@@ -1,12 +1,12 @@
 {
-  "name": "vscode-copy-from-terminal",
+  "name": "terminal-to-clipboard",
   "displayName": "Copy/Pipe From Terminal",
   "description": "Copy/pipe from terminal to VS Code editor",
   "version": "0.0.9",
-  "publisher": "babakks",
+  "publisher": "ayung",
   "repository": {
     "type": "git",
-    "url": "https://github.com/babakks/vscode-copy-from-terminal"
+    "url": "https://github.com/babakks/terminal-to-clipboard"
   },
   "engines": {
     "vscode": "^1.60.0"
@@ -37,7 +37,8 @@
     "tee",
     "cp",
     "tee2code",
-    "cp2code"
+    "cp2code",
+    "beesy"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -47,8 +48,8 @@
   "contributes": {
     "commands": [
       {
-        "command": "vscode-copy-from-terminal.toggle",
-        "title": "Copy From Terminal: Toggle (Enable/Disable)",
+        "command": "terminal-to-clipboard.toggle",
+        "title": "Terminal to Clipboard: Toggle (Enable/Disable)",
         "shortTitle": "Toggle"
       }
     ],
@@ -56,25 +57,25 @@
       {
         "title": "Copy/Pipe From Terminal",
         "properties": {
-          "vscode-copy-from-terminal.enabled": {
+          "terminal-to-clipboard.enabled": {
             "title": "Enabled",
             "description": "Enable/Disable Copy/Pipe From Terminal",
             "type": "boolean",
             "default": true
           },
-          "vscode-copy-from-terminal.tempDirectory": {
+          "terminal-to-clipboard.tempDirectory": {
             "title": "Temp directory",
             "description": "Temp directory for storing copied/piped data",
             "type": "string",
             "default": ""
           },
-          "vscode-copy-from-terminal.alias": {
+          "terminal-to-clipboard.alias": {
             "title": "Alias",
             "description": "Shell function alias",
             "type": "string",
-            "default": "cp2code"
+            "default": "beesy"
           },
-          "vscode-copy-from-terminal.aliasForTee": {
+          "terminal-to-clipboard.aliasForTee": {
             "title": "Alias (for `tee`)",
             "description": "Shell function alias (for `tee`)",
             "type": "string",

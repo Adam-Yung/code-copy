@@ -1,71 +1,42 @@
-# code-copy README
+# Terminal to Clipboard (beesy)
 
-This is the README for your extension "code-copy". After writing up a brief description, we recommend including the following sections.
+Copy from vscode's integrated terminal to clipboard over remote-ssh sessions.  Forked from Babak K. Shandiz's Copy/Pipe From Terminal
 
-## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+## Use **`beesy`**
 
-For example if there is an image subfolder under your extension project workspace:
+This is simply done by piping the output of any shell command to the **`beesy`**
+like:
 
-\!\[feature X\]\(images/feature-x.png\)
+```sh
+ls ~ | beesy
+```
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
 
-## Requirements
+## Copy/Pipe data
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+To copy/pipe data from the integrated terminal into a new editor/tab, follow these steps:
 
-## Extension Settings
+1. Open a new integrated terminal (<kbd>Ctrl</kbd>+<kbd>`</kbd>).
 
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
+1. Prepare the output stream you'd like to copy into VS Code and pipe into to **`beesy`** (or **`tee2code`** if you wouldn't want to end the piping chain). For example something like this:
 
-For example:
+   ```sh
+   ls -1 / | sort | beesy
+   ```
 
-This extension contributes the following settings:
+   or
 
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
+   ```sh
+   ls -1 / | tee2code | sort 
+   ```
 
-## Known Issues
+1. Now you'd see a new editor with the content you just piped.
 
-Calling out known issues can help limit users opening duplicate issues against your extension.
+ℹ️ You may see an unknown command (something like `_bp=...`) being executed in the newly opened terminal window. That's all OK. It's just the definition of a shell function named `beesy` (and `tee2code`), which does the copy/pipe procedure. 🍏
 
-## Release Notes
+## Toggle ON/OFF
 
-Users appreciate release notes as you update your extension.
+You can toggle ON/OFF the extension via the `Terminal to Clipboard: Toggle (Enable/Disable)` command. You can also do this via the settings UI or JSON file (`terminal-to-clipboard.enabled`).
 
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Following extension guidelines
-
-Ensure that you've read through the extensions guidelines and follow the best practices for creating your extension.
-
-* [Extension Guidelines](https://code.visualstudio.com/api/references/extension-guidelines)
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+⚠️ **For now, this extension is just available for UNIX-compatible systems (Linux & macOS).**

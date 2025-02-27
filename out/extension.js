@@ -41,7 +41,7 @@ const command_1 = require("./command");
 function activate(context) {
     exports.extensionContext = context;
     (0, command_1.turnOnIfEnabled)(context);
-    context.subscriptions.push(vscode.commands.registerCommand('vscode-copy-from-terminal.toggle', () => (0, command_1.toggle)(context)));
+    context.subscriptions.push(vscode.commands.registerCommand('terminal-to-clipboard.toggle', () => (0, command_1.toggle)(context)));
 }
 function deactivate(context) {
     (0, command_1.turnOff)(context);
