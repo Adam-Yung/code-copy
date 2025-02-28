@@ -64,11 +64,10 @@ export function turnOff(context: vscode.ExtensionContext) {
 async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir: string, cpAlias: string, teeAlias: string) {
     const payload = makePayload(instanceId, tmpdir, cpAlias, teeAlias);
 
-    // terminal.sendText(payload + '; echo -e "\\x1b[2F\\x1b[0K\\x1b[B\\x1b[2K"', true);
     // Hide the ugly init script from terminal buffer
-    // terminal.sendText(payload + '; echo -e "\\x1b[2F\\x1b[0K\\x1b[B\\x1b[0K"', true);
-    terminal.sendText(payload + '; echo -e "\\x1b[2F\\x1b[0K"', true);
-    // terminal.sendText("clear", true);
+    // terminal.sendText('echo -e "\\x1b[s" ; ', false); // Save cursor position
+    terminal.sendText(payload, false);
+    terminal.sendText(' ; echo -e "\\x1b[2F\\x1b[0K"', true); // Restore cursor position and remove the echo command itself
 }
 
 export function makePayload(instanceId: string, tmpdir: string, cpAlias: string, teeAlias: string) {
