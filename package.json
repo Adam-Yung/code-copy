@@ -2,7 +2,7 @@
   "name": "terminal-to-clipboard",
   "displayName": "Copy to Clipboard From Terminal",
   "description": "Copy to System Clipboard From Terminal",
-  "version": "0.0.1",
+  "version": "0.0.3",
   "publisher": "ayung",
   "repository": {
     "type": "git",
@@ -38,7 +38,7 @@
     "cp",
     "tee2code",
     "cp2code",
-    "beesy"
+    "cody"
   ],
   "activationEvents": [
     "onStartupFinished"
@@ -51,6 +51,11 @@
         "command": "terminal-to-clipboard.toggle",
         "title": "Terminal to Clipboard: Toggle (Enable/Disable)",
         "shortTitle": "Toggle"
+      },
+      {
+        "command": "terminal-to-clipboard.change_alias",
+        "title": "Terminal to Clipboard: Change copy alias",
+        "shortTitle": "Change Alias"
       }
     ],
     "configuration": [
@@ -73,7 +78,7 @@
             "title": "Alias",
             "description": "Shell function alias",
             "type": "string",
-            "default": "beesy"
+            "default": "cody"
           },
           "terminal-to-clipboard.aliasForTee": {
             "title": "Alias (for `tee`)",

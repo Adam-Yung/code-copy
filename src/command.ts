@@ -38,6 +38,7 @@ export function turnOn(context: vscode.ExtensionContext) {
     const cpAlias = Config.cpAlias;
     const teeAlias = Config.teeAlias;
 
+    // vscode.window.showInformationMessage(`Using cpAlias: ${cpAlias}`);
     turnOff(context); // Clean start
     ensureDirectoryExists(tmpdir);
 

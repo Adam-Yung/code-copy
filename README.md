@@ -1,15 +1,15 @@
-# Terminal to Clipboard (beesy)
+# Terminal to Clipboard (cody)
 
 Copy from vscode's integrated terminal to clipboard over remote-ssh sessions.  Forked from Babak K. Shandiz's Copy/Pipe From Terminal
 
 
-## Use **`beesy`**
+## Use **`cody`**
 
-This is simply done by piping the output of any shell command to the **`beesy`**
+This is simply done by piping the output of any shell command to the **`cody`**
 like:
 
 ```sh
-ls ~ | beesy
+ls ~ | cody
 ```
 
 
@@ -19,10 +19,10 @@ To copy/pipe data from the integrated terminal into a new editor/tab, follow the
 
 1. Open a new integrated terminal (<kbd>Ctrl</kbd>+<kbd>`</kbd>).
 
-1. Prepare the output stream you'd like to copy into VS Code and pipe into to **`beesy`** (or **`tee2code`** if you wouldn't want to end the piping chain). For example something like this:
+1. Prepare the output stream you'd like to copy into VS Code and pipe into to **`cody`** (or **`tee2code`** if you wouldn't want to end the piping chain). For example something like this:
 
    ```sh
-   ls -1 / | sort | beesy
+   ls -1 / | sort | cody
    ```
 
    or
@@ -33,7 +33,7 @@ To copy/pipe data from the integrated terminal into a new editor/tab, follow the
 
 1. Now you'd see a new editor with the content you just piped.
 
-ℹ️ You may see an unknown command (something like `_bp=...`) being executed in the newly opened terminal window. That's all OK. It's just the definition of a shell function named `beesy` (and `tee2code`), which does the copy/pipe procedure. 🍏
+ℹ️ You may see an unknown command (something like `_bp=...`) being executed in the newly opened terminal window. That's all OK. It's just the definition of a shell function named `cody` (and `tee2code`), which does the copy/pipe procedure. 🍏
 
 ## Toggle ON/OFF
 
