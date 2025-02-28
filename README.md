@@ -1,4 +1,5 @@
 # Terminal to Clipboard (cody)
+## Forked from [Copy/Pipe From Terminal](https://github.com/babakks/vscode-copy-from-terminal)
 
 Copy from vscode's integrated terminal to clipboard over remote-ssh sessions.  Forked from Babak K. Shandiz's Copy/Pipe From Terminal
 
