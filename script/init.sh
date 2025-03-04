@@ -17,12 +17,14 @@ _get_temp_file() {
     tempfname="$dt-$EXTENSION_INSTANCE_ID.tmp"
     echo "$COPY_TO_VSCODE_TEMP_DIR/$tempfname"
 }
+
 function _cp2code() {
     if [[ -t 0 ]]; then
         printf "This command is intended to be piped only\n" >&2
         return 1
     fi
-    cat > "$(_get_temp_file)"
+    output="$(cat)"
+    echo "$output" > "$(_get_temp_file)"
 }
 _tee2code() { tee "$(_get_temp_file)"; }
 
