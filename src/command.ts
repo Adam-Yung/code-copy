@@ -100,7 +100,7 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
             return;
         }
         const filepath = path.join(event.dir, event.filename);
-        const doc = await vscode.workspace.openTextDocument(filepath);
+        // const doc = await vscode.workspace.openTextDocument(filepath);
         // await vscode.window.showTextDocument(doc, { preview: false, preserveFocus: true });
         let fileContent = await fs.promises.readFile(filepath, 'utf-8');
         fileContent = fileContent.trim();
@@ -115,9 +115,9 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
             }
         }
         if (Config.show_popup) {
-            vscode.window.showInformationMessage('Copied: ' + fileContent);
+            vscode.window.showInformationMessage('📋: ' + fileContent);
         } else {
-            vscode.window.setStatusBarMessage('Copied: ' + fileContent, 3000);
+            vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
         }
     });
     _watcher = watcher;
