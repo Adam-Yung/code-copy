@@ -104,12 +104,21 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
         // await vscode.window.showTextDocument(doc, { preview: false, preserveFocus: true });
         let fileContent = await fs.promises.readFile(filepath, 'utf-8');
         fileContent = fileContent.trim();
+
         await vscode.env.clipboard.writeText(fileContent);
 
-        if (fileContent.length > 25) {
-            fileContent = fileContent.substring(0, 25) + '...';
+        let message_length = 40;
+        if (fileContent.length > message_length) {
+            fileContent = fileContent.substring(0, message_length) + '...';
+            if (fileContent.includes('\n')) {
+                fileContent = fileContent.replace(/\n/g, ' ');
+            }
         }
-        vscode.window.showInformationMessage('Copied to clipboard: ' + fileContent);
+        if (Config.show_popup) {
+            vscode.window.showInformationMessage('Copied: ' + fileContent);
+        } else {
+            vscode.window.setStatusBarMessage('Copied: ' + fileContent, 3000);
+        }
     });
     _watcher = watcher;
 }
