@@ -1,6 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
-import * as crypto from 'crypto';
+// import * as crypto from 'crypto';
 
 import * as vscode from 'vscode';
 
@@ -42,7 +42,7 @@ export function turnOn(context: vscode.ExtensionContext) {
     turnOff(context); // Clean start
     ensureDirectoryExists(tmpdir);
 
-    _instanceId = _instanceId || crypto.randomUUID().substring(0, 4);
+    _instanceId = _instanceId || vscode.env.sessionId.substring(0, 4);;
     const instanceId = _instanceId;
     watch(context, instanceId, tmpdir);
     _onDidOpenTerminalHook = vscode.window.onDidOpenTerminal(x => execPayload(x, instanceId, tmpdir, cpAlias, teeAlias));
@@ -91,6 +91,7 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
     context.subscriptions.push(emitter);
 
     emitter.event(async (event: WatchEvent) => {
+        // vscode.window.showInformationMessage(`File created: ${event.filename}`);
         if (instance !== getExtensionInstanceFromFilename(event.filename)) {
             /**
              * This avoids opening the file in more than one VS Code window (if
