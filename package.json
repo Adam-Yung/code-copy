@@ -2,7 +2,7 @@
   "name": "terminal-to-clipboard",
   "displayName": "Copy to Clipboard From Terminal",
   "description": "Copy to System Clipboard From Terminal",
-  "version": "0.0.6",
+  "version": "0.1.0",
   "publisher": "ayung",
   "repository": {
     "type": "git",
