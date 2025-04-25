@@ -8,14 +8,19 @@ import { Config } from './config';
 import { ensureDirectoryExists, escapeShell } from './util';
 import { makeWatcher, WatchEvent } from './watcher';
 import { extensionContext } from './extension';
+import { randomUUID } from 'crypto';
 
 const DEFAULT_TEMP_DIR = 'temp';
 const INIT_SCRIPT = 'script/init.sh';
 
-/**
-* This avoids opening the file in more than one VS Code window (if there are multiple open VS Code windows).
-*/
-let _instanceId: string | undefined;
+
+// interface copy_info_message {
+//     statusBarItem: vscode.StatusBarItem;
+//     timeoutId?: NodeJS.Timeout; // To clear previous hide timeouts
+// }
+
+// /* Global mapping of copy operations per window */
+// const activeCopyOperations = new Map<string, copy_info_message>();
 
 let _watcher: fs.FSWatcher | undefined;
 let _onDidOpenTerminalHook: vscode.Disposable | undefined;
@@ -38,13 +43,17 @@ export function turnOn(context: vscode.ExtensionContext) {
     const cpAlias = Config.cpAlias;
     const teeAlias = Config.teeAlias;
 
-    // vscode.window.showInformationMessage(`Using cpAlias: ${cpAlias}`);
     turnOff(context); // Clean start
     ensureDirectoryExists(tmpdir);
 
-    _instanceId = _instanceId || vscode.env.sessionId.substring(0, 4);;
-    const instanceId = _instanceId;
+    // const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
+    const instanceId = randomUUID().split('-')[0]; // Use the first part of the UUID as the instance ID
+    console.log(`Instance ID: ${instanceId}`);
+
+    // activeCopyOperations.set(instanceId, { statusBarItem });
+
     watch(context, instanceId, tmpdir);
+
     _onDidOpenTerminalHook = vscode.window.onDidOpenTerminal(x => execPayload(x, instanceId, tmpdir, cpAlias, teeAlias));
     context.subscriptions.push(_onDidOpenTerminalHook);
     vscode.window.terminals.forEach(x => execPayload(x, instanceId, tmpdir, cpAlias, teeAlias));
@@ -52,9 +61,15 @@ export function turnOn(context: vscode.ExtensionContext) {
 
 export function turnOff(context: vscode.ExtensionContext) {
     const tmpdir = Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR);
-    _instanceId = undefined;
+
     disposeWatcher();
     disposeOnDidOpenTerminalHook();
+
+    // activeCopyOperations.forEach((copy_info) => {
+    //     copy_info.timeoutId && clearTimeout(copy_info.timeoutId);
+    //     copy_info.statusBarItem.dispose();
+    // });
+    // activeCopyOperations.clear();
 
     if (tmpdir && fs.existsSync(tmpdir)) {
         fs.rmSync(tmpdir, { recursive: true});
@@ -92,13 +107,10 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
 
     emitter.event(async (event: WatchEvent) => {
         // vscode.window.showInformationMessage(`File created: ${event.filename}`);
-        if (instance !== getExtensionInstanceFromFilename(event.filename)) {
-            /**
-             * This avoids opening the file in more than one VS Code window (if
-             * there are multiple open VS Code windows).
-             */
-            return;
-        }
+        // const instance_from_filename = getExtensionInstanceFromFilename(event.filename);
+
+        // console.log(`New File! Instance from filename: ${instance_from_filename}`);
+
         const filepath = path.join(event.dir, event.filename);
         // const doc = await vscode.workspace.openTextDocument(filepath);
         // await vscode.window.showTextDocument(doc, { preview: false, preserveFocus: true });
@@ -117,7 +129,29 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
         if (Config.show_popup) {
             vscode.window.showInformationMessage('📋: ' + fileContent);
         } else {
-            vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
+            /*
+            let copy_info = activeCopyOperations.get(instance_from_filename);
+            if (!copy_info) {
+                console.error(`No copy info found for instance: ${instance_from_filename}`);
+                return;
+            }
+
+            let status_bar = copy_info.statusBarItem;
+            if (status_bar) {
+                let timeoutId = copy_info.timeoutId;
+                status_bar.text = '📋: ' + fileContent;
+                status_bar.tooltip = Config.cpAlias + ': copied to clipboard';
+                status_bar.show();
+                if (timeoutId) {
+                    clearTimeout(timeoutId);
+                }
+                timeoutId = setTimeout(() => {
+                    status_bar.hide();
+                    status_bar.text = '';
+                }, 3000);
+            }
+            */
+           vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
         }
     });
     _watcher = watcher;
