@@ -1,12 +1,11 @@
 import * as fs from 'fs';
 import * as path from 'path';
-// import * as crypto from 'crypto';
 
 import * as vscode from 'vscode';
 
 import { Config } from './config';
-import { ensureDirectoryExists, escapeShell } from './util';
-import { makeWatcher, WatchEvent } from './watcher';
+import { ensureDirectoryExists, escapeShell, log_info } from './util';
+import { makeWatcher } from './watcher';
 import { extensionContext } from './extension';
 import { randomUUID } from 'crypto';
 
@@ -14,16 +13,14 @@ const DEFAULT_TEMP_DIR = 'temp';
 const INIT_SCRIPT = 'script/init.sh';
 
 
-// interface copy_info_message {
-//     statusBarItem: vscode.StatusBarItem;
-//     timeoutId?: NodeJS.Timeout; // To clear previous hide timeouts
-// }
-
-// /* Global mapping of copy operations per window */
-// const activeCopyOperations = new Map<string, copy_info_message>();
-
 let _watcher: vscode.FileSystemWatcher | undefined;
 let _onDidOpenTerminalHook: vscode.Disposable | undefined;
+
+interface CopyInfo {
+    timeoutId: NodeJS.Timeout | undefined;
+    statusBarItem: vscode.StatusBarItem | undefined;
+}
+let copy_info: CopyInfo;
 
 export async function turnOnIfEnabled(context: vscode.ExtensionContext) {
     if (Config.isEnabled) {
@@ -35,22 +32,24 @@ export async function toggle(context: vscode.ExtensionContext) {
     const newState = !Config.isEnabled;
     newState ? turnOn(context) : turnOff(context);
     vscode.workspace.getConfiguration('terminal-to-clipboard').update('enabled', newState, true);
-    vscode.window.showInformationMessage(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
+    log_info(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
 }
 
 export function turnOn(context: vscode.ExtensionContext) {
-    const tmpdir = Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR);
+    const tmpdir = path.resolve(Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR));
     const cpAlias = Config.cpAlias;
     const teeAlias = Config.teeAlias;
 
     turnOff(context); // Clean start
+
+    log_info(`Cody: ${tmpdir}`);
     ensureDirectoryExists(tmpdir);
 
-    // const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
-    const instanceId = randomUUID().split('-')[0]; // Use the first part of the UUID as the instance ID
-    console.log(`Instance ID: ${instanceId}`);
+    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
+    copy_info = { timeoutId: undefined, statusBarItem };
 
-    // activeCopyOperations.set(instanceId, { statusBarItem });
+    const instanceId = randomUUID().split('-')[0]; // Use the first part of the UUID as the instance ID
+    log_info(`Instance ID: ${instanceId}`);
 
     watch(context, instanceId, tmpdir);
 
@@ -60,19 +59,22 @@ export function turnOn(context: vscode.ExtensionContext) {
 }
 
 export function turnOff(context: vscode.ExtensionContext) {
-    const tmpdir = Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR);
+    const tmpdir = path.resolve(Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR));
 
     disposeWatcher();
     disposeOnDidOpenTerminalHook();
 
-    // activeCopyOperations.forEach((copy_info) => {
-    //     copy_info.timeoutId && clearTimeout(copy_info.timeoutId);
-    //     copy_info.statusBarItem.dispose();
-    // });
-    // activeCopyOperations.clear();
-
     if (tmpdir && fs.existsSync(tmpdir)) {
         fs.rmSync(tmpdir, { recursive: true});
+    }
+    if (copy_info) {
+        if (copy_info.timeoutId) {
+            clearTimeout(copy_info.timeoutId);
+        }
+        if (copy_info.statusBarItem) {    
+            copy_info.statusBarItem.dispose();
+            copy_info.statusBarItem = undefined;
+        }
     }
 }
 
@@ -82,13 +84,14 @@ async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir
     // Hide the ugly init script from terminal buffer
     // terminal.sendText('echo -e "\\x1b[s" ; ', false); // Save cursor position
     terminal.sendText(payload, false);
+    log_info(`Payload sent to terminal:\n ${payload}`);
     terminal.sendText(' ; echo -e "\\x1b[2F\\x1b[0K"', true); // Restore cursor position and remove the echo command itself
 }
 
 export function makePayload(instanceId: string, tmpdir: string, cpAlias: string, teeAlias: string) {
     const bp = extensionContext.extensionPath;
     const path2script = path.join('$_bp', escapeShell(INIT_SCRIPT));
-    const path2tmpdir = path.join('$_bp', escapeShell(path.relative(bp, tmpdir)));
+    const path2tmpdir = escapeShell(tmpdir);
     const args = [
         path2script,
         escapeShell(instanceId),
@@ -107,11 +110,16 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
     watcher.onDidCreate(async (uri) => {
         const filepath = uri.fsPath;
 
-        // vscode.window.showInformationMessage(`File created: ${filepath}`);
+        // log_info(`File created: ${filepath}`);
         const instance_from_filename = getExtensionInstanceFromFilename(filepath);
-
-        console.log(`New File! From instance: ${instance_from_filename}`);
         
+        if (instance_from_filename !== instance) {
+            log_info(`Ignoring file from different instance: ${instance_from_filename}`);
+            return;
+        }
+        else {
+            log_info(`New File! From instance: ${instance_from_filename}`);
+        }
         // const doc = await vscode.workspace.openTextDocument(filepath);
         // await vscode.window.showTextDocument(doc, { preview: false, preserveFocus: true });
         let fileContent = await fs.promises.readFile(filepath, 'utf-8');
@@ -129,29 +137,23 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
         if (Config.show_popup) {
             vscode.window.showInformationMessage('📋: ' + fileContent);
         } else {
-            /*
-            let copy_info = activeCopyOperations.get(instance_from_filename);
-            if (!copy_info) {
-                console.error(`No copy info found for instance: ${instance_from_filename}`);
-                return;
-            }
-
-            let status_bar = copy_info.statusBarItem;
-            if (status_bar) {
+            let statusBarItem = copy_info.statusBarItem;
+            if (statusBarItem) {
                 let timeoutId = copy_info.timeoutId;
-                status_bar.text = '📋: ' + fileContent;
-                status_bar.tooltip = Config.cpAlias + ': copied to clipboard';
-                status_bar.show();
                 if (timeoutId) {
                     clearTimeout(timeoutId);
                 }
+                
+                statusBarItem.text = '📋: ' + fileContent;
+                statusBarItem.tooltip = Config.cpAlias + ': copied to clipboard';
+                statusBarItem.show();
+
                 timeoutId = setTimeout(() => {
-                    status_bar.hide();
-                    status_bar.text = '';
+                    statusBarItem.hide();
+                    statusBarItem.text = '';
                 }, 3000);
             }
-            */
-           vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
+        //    vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
         }
     });
     _watcher = watcher;
