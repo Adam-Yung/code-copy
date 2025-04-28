@@ -22,7 +22,7 @@ const INIT_SCRIPT = 'script/init.sh';
 // /* Global mapping of copy operations per window */
 // const activeCopyOperations = new Map<string, copy_info_message>();
 
-let _watcher: fs.FSWatcher | undefined;
+let _watcher: vscode.FileSystemWatcher | undefined;
 let _onDidOpenTerminalHook: vscode.Disposable | undefined;
 
 export async function turnOnIfEnabled(context: vscode.ExtensionContext) {
@@ -102,16 +102,16 @@ export function makePayload(instanceId: string, tmpdir: string, cpAlias: string,
 function watch(context: vscode.ExtensionContext, instance: string, tmpdir: string) {
     disposeWatcher();
 
-    let { watcher, emitter } = makeWatcher(tmpdir);
-    context.subscriptions.push(emitter);
+    let { watcher } = makeWatcher(tmpdir);
 
-    emitter.event(async (event: WatchEvent) => {
-        // vscode.window.showInformationMessage(`File created: ${event.filename}`);
-        // const instance_from_filename = getExtensionInstanceFromFilename(event.filename);
+    watcher.onDidCreate(async (uri) => {
+        const filepath = uri.fsPath;
 
-        // console.log(`New File! Instance from filename: ${instance_from_filename}`);
+        // vscode.window.showInformationMessage(`File created: ${filepath}`);
+        const instance_from_filename = getExtensionInstanceFromFilename(filepath);
 
-        const filepath = path.join(event.dir, event.filename);
+        console.log(`New File! From instance: ${instance_from_filename}`);
+        
         // const doc = await vscode.workspace.openTextDocument(filepath);
         // await vscode.window.showTextDocument(doc, { preview: false, preserveFocus: true });
         let fileContent = await fs.promises.readFile(filepath, 'utf-8');
@@ -158,7 +158,7 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
 }
 
 function disposeWatcher() {
-    _watcher?.close();
+    _watcher?.dispose();
     _watcher = undefined;
 }
 
