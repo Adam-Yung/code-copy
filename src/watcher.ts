@@ -7,25 +7,10 @@ import { Config } from './config';
 
 export type WatchEvent = { dir: string, filename: string };
 
-export function makeWatcher(tmpdir: string): { watcher: fs.FSWatcher, emitter: vscode.EventEmitter<WatchEvent> } {
-    let ls: string[] | undefined;
-    const emitter = new vscode.EventEmitter<WatchEvent>();
-
-    const watcher = fs.watch(tmpdir, async (eventType, filename) => {
-        if (eventType !== 'rename') {
-            return;
-        }
-
-        if (filename === null) {
-            return;
-        }
-        if (ls && ls.includes(filename)) {
-            return;
-        }
-        ls = (await fs.promises.readdir(tmpdir, { withFileTypes: true })).filter(x => x.isFile()).map(x => x.name);
-        const e: WatchEvent = { dir: tmpdir, filename: filename };
-        emitter.fire(e);
-    });
-
-    return { watcher, emitter };
+export function makeWatcher(tmpdir: string): { watcher: vscode.FileSystemWatcher } {
+    const watch_path_uri = new vscode.RelativePattern(vscode.Uri.file(tmpdir), '*.tmp');
+    console.log(`Watching for changes in: ${tmpdir}, uri: ${watch_path_uri.baseUri}, pattern: ${watch_path_uri.pattern}`);
+    const watcher = vscode.workspace.createFileSystemWatcher(watch_path_uri, false, true, true);
+    
+    return {watcher};
 }
