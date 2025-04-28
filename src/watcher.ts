@@ -1,12 +1,6 @@
-import * as fs from 'fs';
-import * as path from 'path';
-
 import * as vscode from 'vscode';
-
-import { Config } from './config';
 import { log_info } from './util';
 
-export type WatchEvent = { dir: string, filename: string };
 
 export function makeWatcher(tmpdir: string): { watcher: vscode.FileSystemWatcher } {
     const watch_path_uri = new vscode.RelativePattern(vscode.Uri.file(tmpdir), '*.tmp');
