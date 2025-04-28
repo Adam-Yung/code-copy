@@ -11,7 +11,7 @@ export function escapeShell(cmd: string) {
     return cmd.replace(/(["'$`\\])/g, '\\$1');
 }
 
-const DEBUG = true;
+const DEBUG = false; // Set to true to enable debug messages
 
 export const log_info = (message: string) => {
     if (DEBUG) {

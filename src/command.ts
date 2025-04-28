@@ -40,7 +40,7 @@ export function turnOn(context: vscode.ExtensionContext) {
     const cpAlias = Config.cpAlias;
     const teeAlias = Config.teeAlias;
 
-    turnOff(context); // Clean start
+    // turnOff(context); // Clean start
 
     log_info(`Cody: ${cody_tmpdir}`);
     ensureDirectoryExists(cody_tmpdir);
@@ -61,6 +61,7 @@ export function turnOn(context: vscode.ExtensionContext) {
 export function turnOff(context: vscode.ExtensionContext) {
     const cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
 
+    log_info(`Turning off Cody...`);
     disposeWatcher();
     disposeOnDidOpenTerminalHook();
 
@@ -103,7 +104,7 @@ export function makePayload(instanceId: string, tmpdir: string, cpAlias: string,
 }
 
 function watch(context: vscode.ExtensionContext, instance: string, tmpdir: string) {
-    disposeWatcher();
+    // disposeWatcher();
 
     let { watcher } = makeWatcher(tmpdir);
 
