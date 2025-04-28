@@ -8,8 +8,8 @@ import { ensureDirectoryExists, escapeShell, log_info } from './util';
 import { makeWatcher } from './watcher';
 import { extensionContext } from './extension';
 import { randomUUID } from 'crypto';
+import { tmpdir } from 'os';
 
-const DEFAULT_TEMP_DIR = 'temp';
 const INIT_SCRIPT = 'script/init.sh';
 
 
@@ -36,14 +36,14 @@ export async function toggle(context: vscode.ExtensionContext) {
 }
 
 export function turnOn(context: vscode.ExtensionContext) {
-    const tmpdir = path.resolve(Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR));
+    const cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
     const cpAlias = Config.cpAlias;
     const teeAlias = Config.teeAlias;
 
     turnOff(context); // Clean start
 
-    log_info(`Cody: ${tmpdir}`);
-    ensureDirectoryExists(tmpdir);
+    log_info(`Cody: ${cody_tmpdir}`);
+    ensureDirectoryExists(cody_tmpdir);
 
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
     copy_info = { timeoutId: undefined, statusBarItem };
@@ -51,21 +51,21 @@ export function turnOn(context: vscode.ExtensionContext) {
     const instanceId = randomUUID().split('-')[0]; // Use the first part of the UUID as the instance ID
     log_info(`Instance ID: ${instanceId}`);
 
-    watch(context, instanceId, tmpdir);
+    watch(context, instanceId, cody_tmpdir);
 
-    _onDidOpenTerminalHook = vscode.window.onDidOpenTerminal(x => execPayload(x, instanceId, tmpdir, cpAlias, teeAlias));
+    _onDidOpenTerminalHook = vscode.window.onDidOpenTerminal(x => execPayload(x, instanceId, cody_tmpdir, cpAlias, teeAlias));
     context.subscriptions.push(_onDidOpenTerminalHook);
-    vscode.window.terminals.forEach(x => execPayload(x, instanceId, tmpdir, cpAlias, teeAlias));
+    vscode.window.terminals.forEach(x => execPayload(x, instanceId, cody_tmpdir, cpAlias, teeAlias));
 }
 
 export function turnOff(context: vscode.ExtensionContext) {
-    const tmpdir = path.resolve(Config.tempDirectory || path.join(context.extensionUri.fsPath, DEFAULT_TEMP_DIR));
+    const cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
 
     disposeWatcher();
     disposeOnDidOpenTerminalHook();
 
-    if (tmpdir && fs.existsSync(tmpdir)) {
-        fs.rmSync(tmpdir, { recursive: true});
+    if (cody_tmpdir && fs.existsSync(cody_tmpdir)) {
+        fs.rmSync(cody_tmpdir, { recursive: true});
     }
     if (copy_info) {
         if (copy_info.timeoutId) {
