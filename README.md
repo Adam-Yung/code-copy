@@ -1,5 +1,6 @@
-![Icon](images/cute_cody.png)
 # Terminal to Clipboard (cody)
+
+<img src="images/cute_cody.png" alt="Extension Icon" width="150"/>
 
 ℹ️ Forked from [Copy/Pipe From Terminal](https://github.com/babakks/vscode-copy-from-terminal)
 
