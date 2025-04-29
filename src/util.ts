@@ -11,7 +11,7 @@ export function escapeShell(cmd: string) {
     return cmd.replace(/(["'$`\\])/g, '\\$1');
 }
 
-const DEBUG = false; // Set to true to enable debug messages
+const DEBUG = true; // Set to true to enable debug messages
 
 export const log_info = (message: string) => {
     if (DEBUG) {
@@ -29,3 +29,7 @@ export const log_debug = (message: string) => {
         console.log(message);
     }
 };
+
+export function sleep(ms: number): Promise<void> {
+    return new Promise(resolve => setTimeout(resolve, ms));
+}
