@@ -4,3 +4,5 @@ dist
 *bak*
 temp
 out
+node_modules
+*.log
