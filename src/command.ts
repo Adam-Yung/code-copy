@@ -9,6 +9,7 @@ import { makeWatcher } from './watcher';
 import { extensionContext } from './extension';
 import { randomUUID } from 'crypto';
 import { tmpdir } from 'os';
+import { utils } from 'mocha';
 
 const INIT_SCRIPT = 'script/init.sh';
 
@@ -21,6 +22,9 @@ interface CopyInfo {
     statusBarItem: vscode.StatusBarItem | undefined;
 }
 let copy_info: CopyInfo;
+
+// Define a map of terminalID toinstanceID
+const terminalMap = new Map<number, string>();
 
 export async function turnOnIfEnabled(context: vscode.ExtensionContext) {
     if (Config.isEnabled) {
@@ -53,8 +57,9 @@ export function turnOn(context: vscode.ExtensionContext) {
 
     watch(context, instanceId, cody_tmpdir);
 
-    _onDidOpenTerminalHook = vscode.window.onDidOpenTerminal(x => execPayload(x, instanceId, cody_tmpdir, cpAlias, teeAlias));
+    _onDidOpenTerminalHook = vscode.window.onDidOpenTerminal(x => execPayload(x, instanceId, cody_tmpdir, cpAlias, teeAlias, true));
     context.subscriptions.push(_onDidOpenTerminalHook);
+
     vscode.window.terminals.forEach(x => execPayload(x, instanceId, cody_tmpdir, cpAlias, teeAlias));
 }
 
@@ -77,26 +82,40 @@ export function turnOff(context: vscode.ExtensionContext) {
             copy_info.statusBarItem = undefined;
         }
     }
+    // Clean terminal map
+    terminalMap.clear();
 }
 
-async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir: string, cpAlias: string, teeAlias: string) {
+async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir: string, cpAlias: string, teeAlias: string, is_startup:boolean=false) {
     const payload = makePayload(instanceId, tmpdir, cpAlias, teeAlias);
-    let command = '';
+    let command:string = '', startup_offset:string = (is_startup) ? "100" : "1";
+
+    const pid = await terminal.processId;
+    if (!pid) {
+        return;
+    }
+
+    // Check if the terminal has already run the script
+    if (terminalMap.has(pid)) {
+        const existingInstanceId = terminalMap.get(pid);
+        if (existingInstanceId === instanceId) {
+            util.log_debug(`Terminal already initialized for instance ${instanceId}. Skipping...`);
+            return;
+        }
+    }
+
+    // Store the terminal ID in the map
+    terminalMap.set(pid, instanceId || '');
 
     // Hide the ugly init script from terminal buffer
-    command = `echo -e "\\x1b[s";`; // Save cursor position
-    command += `${payload}; `; // Actual paylod
+    command = `${payload}; `; // Actual paylod
+    
     // Move back to the saved position, but since vscode terminal.sendText will echo the command TWICE, we need to count the number of lines
     // and move up that many lines. Use tput cols to get the width of the terminal, and then divide the length of this command by the width
-    command += `echo -e "\\x1b[u \\x1b[$((___ / $(tput cols) + 1))A \\x1b[J"`;
-    const length = command.length;
-    util.log_debug(`Command length: ${length}`);
-    command.replace(/___/g, length.toString());
+    command += `_l=$(( ( ___ / $(tput cols) ) + ${startup_offset})); echo -e "\\x1b[$\{_l\}A \\x1b[J \\x1b[A"`;
+    command = command.replace(/___/g, command.length.toString());
 
-    terminal.sendText(command, true);
-
-    // Log the original payload for debugging purposes
-    util.log_info(`Payload sent to terminal:\n ${payload}`);
+    setTimeout(() => {terminal.sendText(' ' + command, true)}, 1000);
 }
 
 export function makePayload(instanceId: string, tmpdir: string, cpAlias: string, teeAlias: string) {
@@ -141,7 +160,7 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
         let message_length = 40;
         if (fileContent.length > message_length) {
             fileContent = fileContent.substring(0, message_length) + '...';
-            fileContent = fileContent.replace(/[\r\n]/g, ' ');
+            fileContent = fileContent.replace(/[\r\n\t]/g, ' ');
         }
         if (Config.show_popup) {
             vscode.window.showInformationMessage('📋: ' + fileContent);

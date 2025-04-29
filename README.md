@@ -41,5 +41,21 @@ You can toggle ON/OFF the extension via the `Terminal to Clipboard: Toggle (Enab
 ℹ️ You can change the alias to something other than **`cody`**, with the following:
 ![Capture](images/capture/cody_alias_demo.gif)
 
+## Build it yourself
+
+1. Download the required packages
+In the cody repository, assuming you have **`npm`** installed, run the following
+
+   ```sh
+   npm install
+   ```
+
+2. Generate the out files
+   
+   ```sh
+   vsce package
+   ```
+
+3. Press F5 in VSCode with [extension.ts](src/extension.ts) open in editor, and choose **`VSCode Extension Development`**
 
 ⚠️ **For now, this extension is just available for UNIX-compatible systems (Linux & macOS).**
