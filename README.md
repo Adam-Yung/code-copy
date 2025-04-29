@@ -1,6 +1,8 @@
+![Icon](images/cute_cody.png)
 # Terminal to Clipboard (cody)
 
 ℹ️ Forked from [Copy/Pipe From Terminal](https://github.com/babakks/vscode-copy-from-terminal)
+
 ℹ️ Major changes to v0.1.0, fixing multi-window copying issues, moving notifications to status bar, and more!  See [Change log](CHANGELOG.md) for details!
 
 ### Copy from vscode's integrated terminal to clipboard on any POSIX-compliant system, even over remote-ssh sessions!
