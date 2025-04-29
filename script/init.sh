@@ -20,8 +20,7 @@ _get_temp_file() {
 
 function _cp2code() {
     if [[ -t 0 ]]; then
-        printf "This command is intended to be piped only\n" >&2
-        return 1
+        echo "Enter text to be copied to clipboard: (Press Ctrl+D to finish)"
     fi
     output="$(cat)"
     echo "$output" > "$(_get_temp_file)"

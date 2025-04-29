@@ -4,7 +4,7 @@
 ℹ️ Major changes to v0.1.0, fixing multi-window copying issues, moving notifications to status bar, and more!  See [Change log](CHANGELOG.md) for details!
 
 ### Copy from vscode's integrated terminal to clipboard on any POSIX-compliant system, even over remote-ssh sessions!
-![Capture](images/capture/cody_demo.gif)
+![Capture](images/capture/cody_demo_v0.1.0.gif)
 
 ## Use **`cody`**
 
