@@ -83,22 +83,16 @@ async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir
     const payload = makePayload(instanceId, tmpdir, cpAlias, teeAlias);
     let command = '';
 
-    await util.sleep(500); // Wait for terminal to be ready
     // Hide the ugly init script from terminal buffer
+    command = `echo -e "\\x1b[s";`; // Save cursor position
+    command += `${payload}; `; // Actual paylod
+    // Move back to the saved position, but since vscode terminal.sendText will echo the command TWICE, we need to count the number of lines
+    // and move up that many lines. Use tput cols to get the width of the terminal, and then divide the length of this command by the width
+    command += `echo -e "\\x1b[u \\x1b[$((___ / $(tput cols) + 1))A \\x1b[J"`;
+    const length = command.length;
+    util.log_debug(`Command length: ${length}`);
+    command.replace(/___/g, length.toString());
 
-    // Construct the command with ANSI escape sequences for hiding
-    // 1. Save cursor position (\x1b[s)
-    // 2. Execute the command payload
-    // 3. After command, execute echo -e:
-    //    - Restore cursor position (\x1b[u)
-    //    - Erase from cursor to end of display (\x1b[J) - clears command line, new prompt, etc.
-    command = `echo -e "\\x1b[s"`;
-    terminal.sendText(command, true);
-
-    command = `${payload}`;
-    terminal.sendText(command, true);
-
-    command = `echo -e "\\x1b[u \\x1b[4A \\x1b[J"`;
     terminal.sendText(command, true);
 
     // Log the original payload for debugging purposes
@@ -164,8 +158,10 @@ function watch(context: vscode.ExtensionContext, instance: string, tmpdir: strin
                 statusBarItem.show();
 
                 timeoutId = setTimeout(() => {
-                    statusBarItem.hide();
-                    statusBarItem.text = '';
+                    if (statusBarItem) {
+                        statusBarItem.hide();
+                        statusBarItem.text = '';
+                    }
                 }, 3000);
             }
         //    vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
