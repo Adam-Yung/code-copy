@@ -6,3 +6,6 @@ temp
 out
 node_modules
 *.log
+.vscode
+.vscodeignore
+*tmp*
