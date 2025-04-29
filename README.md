@@ -1,8 +1,9 @@
 # Terminal to Clipboard (cody)
-## Forked from [Copy/Pipe From Terminal](https://github.com/babakks/vscode-copy-from-terminal)
 
-Copy from vscode's integrated terminal to clipboard over remote-ssh sessions.  Forked from Babak K. Shandiz's Copy/Pipe From Terminal
+ℹ️ Forked from [Copy/Pipe From Terminal](https://github.com/babakks/vscode-copy-from-terminal)
+ℹ️ Major changes to v0.1.0, fixing multi-window copying issues, moving notifications to status bar, and more!  See [Change log](CHANGELOG.md) for details!
 
+### Copy from vscode's integrated terminal to clipboard on any POSIX-compliant system, even over remote-ssh sessions!
 ![Capture](images/capture/cody_demo.gif)
 
 ## Use **`cody`**
@@ -29,7 +30,7 @@ To copy/pipe data from the integrated terminal into a new editor/tab, follow the
 
 ℹ️ You may see an unknown command (something like `_bp=...`) being executed in the newly opened terminal window. That's all OK. It's just the definition of a shell function named `cody` (and `tee2code`), which does the copy/pipe procedure. 🍏
 
-ℹ️ I tried to hide the command using some ANSI terminal control codes, but it is not the most portable solution in the world (e.g. only works in xterm, and doesn't consider terminal size etc.)
+ℹ️ I tried to hide the command using some ANSI terminal control codes, but it is not the most portable solution in the world
 
 ## Toggle ON/OFF
 
