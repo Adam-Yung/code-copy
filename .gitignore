@@ -3,9 +3,9 @@ dist
 *.vsix
 *bak*
 temp
-out
 node_modules
 *.log
 .vscode
 .vscodeignore
 *tmp*
+package-lock.json
