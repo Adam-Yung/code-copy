@@ -31,6 +31,7 @@ To copy data from the integrated terminal into your local machine's system clipb
    ls -1 / | sort | cody
    ```
 
+## Flashing code executed on terminal startup
 ℹ️ You may see an unknown command (something like `_bp=...`) flashing in a newly opened terminal window. 
 That's all OK. It's just the definition of a shell function named `cody`, which writes the piped output into a temporary file, triggering VSCode's File System Watcher.
 You can inspect the code in [init.sh](script/init.sh) 🍏
