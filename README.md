@@ -33,13 +33,15 @@ To copy data from the integrated terminal into your local machine's system clipb
 
 ## Flashing code executed on terminal startup
 > [!NOTE]
-> ℹ️ You may see an unknown command (something like `_bp=...`) flashing in a newly opened terminal window.
-> It's just the definition of a shell function named `cody`
-> which writes the piped output into a temporary file, triggering VSCode's File System Watcher.
-> You can inspect the code in [init.sh](script/init.sh) 🍏
+> You may see an unknown command (something like `_bp=...`) flashing in a newly opened terminal window.
+
+It's just the definition of a shell function named `cody`,
+which writes the piped output into a temporary file, triggering VSCode's File System Watcher.
+
+ℹ️ You can inspect the code in [init.sh](script/init.sh) 🍏
 
 > [!NOTE]
-> ℹ️ I tried to hide the command using some ANSI terminal control codes, but it is not the most portable solution in the world
+> I tried to hide the command using some ANSI terminal control codes, but it is not the most portable solution in the world
 
 ## Toggle ON/OFF
 
