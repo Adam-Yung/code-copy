@@ -19,19 +19,21 @@ ls ~ | cody
 ```
 
 
-## Copy/Pipe data
+## Copy data to local clipboard
 
-To copy/pipe data from the integrated terminal into a new editor/tab, follow these steps:
+To copy data from the integrated terminal into your local machine's system clipboard, follow these steps:
 
 1. Open a new integrated terminal (<kbd>Ctrl</kbd>+<kbd>`</kbd>).
 
-2. Prepare the output stream you'd like to copy into VS Code and pipe into to **`cody`**. For example something like this:
+2. Prepare the output stream you'd like to copy and pipe into to **`cody`**. For example something like this:
 
    ```sh
    ls -1 / | sort | cody
    ```
 
-ℹ️ You may see an unknown command (something like `_bp=...`) being executed in the newly opened terminal window. That's all OK. It's just the definition of a shell function named `cody` (and `tee2code`), which does the copy/pipe procedure. 🍏
+ℹ️ You may see an unknown command (something like `_bp=...`) flashing in a newly opened terminal window. 
+That's all OK. It's just the definition of a shell function named `cody`, which writes the piped output into a temporary file, triggering VSCode's File System Watcher.
+You can inspect the code in [init.sh](script/init.sh) 🍏
 
 ℹ️ I tried to hide the command using some ANSI terminal control codes, but it is not the most portable solution in the world
 
