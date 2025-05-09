@@ -112,7 +112,7 @@ async function execPayload(terminal: vscode.Terminal, instanceId: string, tmpdir
     
     // Move back to the saved position, but since vscode terminal.sendText will echo the command TWICE, we need to count the number of lines
     // and move up that many lines. Use tput cols to get the width of the terminal, and then divide the length of this command by the width
-    command += `_l=$(( ( ___ / $(tput cols) ) + ${startup_offset})); echo -e "\\x1b[$\{_l\}A \\x1b[J \\x1b[A"`;
+    command += `_l=$(( ( ___ / $(tput cols) ) + ${startup_offset})); echo -e "\\x1b[$\{_l\}A \\x1b[J \\x1b[2A"`;
     command = command.replace(/___/g, command.length.toString());
 
     setTimeout(() => {terminal.sendText(' ' + command, true)}, 1000);
