@@ -2,6 +2,16 @@
 # Change Log
 All notable changes to CODY will be documented in this file.
 
+## [0.2.0] - 10/07/2025
+  
+Cody is in BETA
+ 
+### Changed
+- Dynamically add cody script to vscode server's bin, eliminating obnoxious and unsafe flashing code on terminal startup, and remove dependency on volatile aliases 
+- Significant refactoring of extension code
+
+### Fixed
+- Cody disappears due to shell refreshing
  
 ## [0.1.0] - 29/04/2025
   

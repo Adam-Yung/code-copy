@@ -21,6 +21,7 @@ import { tmpdir } from 'os';
 
 let cody_tmpdir:string | undefined;
 let cody_bin:string | undefined;
+let cody_script:string | undefined;
 
 let _watcher: vscode.FileSystemWatcher | undefined;
 
@@ -43,7 +44,7 @@ export async function toggle(context: vscode.ExtensionContext) {
     util.log_info(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
 }
 
-export function turnOn(context: vscode.ExtensionContext) {
+export async function turnOn(context: vscode.ExtensionContext) {
     cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
     const cpAlias = Config.cpAlias;
 
@@ -70,7 +71,7 @@ export function turnOn(context: vscode.ExtensionContext) {
         return;
     }
     // Create cody script
-    util.createBashScriptFile(cody_bin, cody_tmpdir, Config.cpAlias);
+    cody_script = await util.createBashScriptFile(cody_bin, cody_tmpdir, Config.cpAlias);
 
     // Create Status Bar Item for Notifications
     const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
@@ -80,6 +81,12 @@ export function turnOn(context: vscode.ExtensionContext) {
     watch(context, cody_tmpdir);
 }
 
+export function delete_cody_script() {
+    // Remove old cody script
+    if (cody_script && fs.existsSync(cody_script)) {
+        fs.rmSync(cody_script);
+    }
+}
 
 export function turnOff(context: vscode.ExtensionContext) {
     util.log_info(`Turning off Cody...`);
@@ -92,6 +99,8 @@ export function turnOff(context: vscode.ExtensionContext) {
     if (cody_bin && cody_bin.includes(context.extensionPath) && fs.existsSync(cody_bin)) {
         fs.rmSync(cody_bin, { recursive: true});
     }
+
+    delete_cody_script();
 
     // Remove Status Bar Notifications
     if (copy_info) {
