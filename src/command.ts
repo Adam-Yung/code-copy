@@ -19,8 +19,8 @@ import { tmpdir } from 'os';
  */
 
 
-let cody_tmpdir:string;
-let cody_bin:string;
+let cody_tmpdir:string | undefined;
+let cody_bin:string | undefined;
 
 let _watcher: vscode.FileSystemWatcher | undefined;
 
@@ -61,8 +61,14 @@ export function turnOn(context: vscode.ExtensionContext) {
 
 
     // Create bin dir for cody command
-    cody_bin = util.prepend_path(context);
-
+    cody_bin = util.findVSCodeCliPath(context);
+    if (cody_bin) {
+        util.log_info(`Cody bin added to path: ${cody_bin}`);
+    }
+    else {
+        util.log_error("Cody bin cannot be added to PATH!");
+        return;
+    }
     // Create cody script
     util.createBashScriptFile(cody_bin, cody_tmpdir, Config.cpAlias);
 
@@ -83,7 +89,7 @@ export function turnOff(context: vscode.ExtensionContext) {
     if (cody_tmpdir && fs.existsSync(cody_tmpdir)) {
         fs.rmSync(cody_tmpdir, { recursive: true});
     }
-    if (cody_bin && fs.existsSync(cody_bin)) {
+    if (cody_bin && cody_bin.includes(context.extensionPath) && fs.existsSync(cody_bin)) {
         fs.rmSync(cody_bin, { recursive: true});
     }
 

@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-
+import platform from 'process';
+import { Config } from './config';
 
 /**
  * File System Manipulation Related Functions
@@ -79,22 +80,25 @@ export async function renameBashScriptFile(targetDir: string, oldName: string, n
  * Logging Related Functions
  */
 
-const DEBUG = true; // Set to true to enable debug messages
+const DEBUG = false; // Set to true to enable debug messages
 
 export const log_info = (message: string) => {
+    const msg = `${Config.cpAlias}: ${message}`;
     if (DEBUG) {
-        vscode.window.showInformationMessage(message);
+        vscode.window.showInformationMessage(msg);
     }
-    console.log(message);
+    console.log(msg);
 };
 export const log_error = (message: string) => {
+    const msg = `${Config.cpAlias}: ${message}`;
     if (DEBUG) {
-        vscode.window.showErrorMessage(message);
+        vscode.window.showErrorMessage(msg);
     }
-    console.error(message);
+    console.error(msg);
 };
 export const log_debug = (message: string) => {
-        console.log(message);
+    const msg = `${Config.cpAlias}: ${message}`;
+    console.log(msg);
 };
 
 export function sleep(ms: number): Promise<void> {
@@ -134,9 +138,71 @@ export function prepend_path(context: vscode.ExtensionContext): string {
     // 1. Define the directory where your cusntom executables/scripts are located
     const customBinDir = path.join(context.extensionPath, 'bin');
 
+    // 2. Ensure prepended directory exists
     ensureDirectoryExists(customBinDir);
 
-    // 2. Prepend your custom directory to the PATH environment variable
-    context.environmentVariableCollection.prepend('PATH', customBinDir + path.delimiter); // Add path.delimiter to ensure proper separation
+    
+    // 3. Get the correct configuration setting for the platform
+    const configSection = `terminal.integrated.env.${platform}`;
+    const configuration = vscode.workspace.getConfiguration();
+    // Get the current environment settings for the terminal, or an empty object
+    const currentEnv = configuration.get<{ [key: string]: string }>(configSection, {});
+
+    // 4. Prepend your script directory to the PATH
+    // We make a copy to avoid modifying the object returned by the configuration
+    const newEnv = { ...currentEnv };
+    const existingPath = newEnv.PATH || process.env.PATH || '';
+    
+    // Check if existing PATH already has 
+    const pathParts = existingPath.split(path.delimiter);
+    if (pathParts.includes(customBinDir)) {
+        log_debug("Cody bin already in PATH");
+        return customBinDir;
+    }
+    else {
+        if (vscode.window.terminals.length > 0) {
+            vscode.window.showInformationMessage(`${Config.cpAlias}: Please refresh your terminal to use Cody!`);
+        }
+    }
+    // Use path.delimiter (':' on *nix) to separate paths
+    newEnv.PATH = `${customBinDir}${path.delimiter}${existingPath}`;
+
+    // 5. Update the configuration for the current workspace
+    // This will add the setting to .vscode/settings.json
+    configuration.update(configSection, newEnv, vscode.ConfigurationTarget.Global);
+
+    log_info('Cody has been added to the integrated terminal PATH for this workspace.');
     return customBinDir;
+}
+
+/**
+ * Finds the dynamic path to the VS Code Server remote CLI.
+ * @returns The CLI path string, or undefined if not found.
+ */
+export function findVSCodeCliPath(context: vscode.ExtensionContext): string | undefined {
+    const configSection = `terminal.integrated.env.${platform}`;
+    const configuration = vscode.workspace.getConfiguration();
+
+    // Get the current environment settings for the terminal, or an empty object
+    const currentEnv = configuration.get<{ [key: string]: string }>(configSection, {});
+
+    const currentPath = currentEnv.PATH || process.env.PATH || '';
+
+    if (!currentPath) {
+        return undefined;
+    }
+    
+    // Split the PATH variable by the OS-specific delimiter (':' on *nix)
+    const pathEntries = currentPath.split(path.delimiter);
+    
+    // Find the entry that contains the VS Code Server path signature
+    const cliPath = pathEntries.find(p => 
+        p.includes('.vscode-server') && p.includes('/bin/remote-cli')
+    );
+
+    if (!cliPath) {
+        return prepend_path(context);   
+    }
+
+    return cliPath;
 }
