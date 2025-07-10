@@ -16,8 +16,4 @@ export class Config {
     static get cpAlias(): string {
         return vscode.workspace.getConfiguration('terminal-to-clipboard').get<string>('alias', '');
     }
-
-    static get teeAlias(): string {
-        return vscode.workspace.getConfiguration('terminal-to-clipboard').get<string>('aliasForTee', '');
-    }
 }

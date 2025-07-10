@@ -2,7 +2,7 @@ import * as vscode from 'vscode';
 import * as process from 'process';
 
 import { toggle, turnOnIfEnabled, turnOff } from './command';
-
+import { log_debug } from './util';
 export let extensionContext: vscode.ExtensionContext;
 
 export function is_posix_workspace(): boolean {
@@ -12,7 +12,7 @@ export function is_posix_workspace(): boolean {
             // Check the scheme of the first workspace folder URI
             // For WSL, it's typically 'vscode-remote' and authority contains 'wsl' or 'wsl+distroName'
             const firstFolderUri = workspaceFolders[0].uri;
-            console.log(`Workspace folder URI: ${firstFolderUri.toString()}`);
+            log_debug(`Workspace folder URI: ${firstFolderUri.toString()}`);
             if (firstFolderUri.scheme === 'vscode-remote' && firstFolderUri.authority.startsWith('wsl')) {
                return true;
             }
@@ -25,7 +25,7 @@ export function is_posix_workspace(): boolean {
 export function activate(context: vscode.ExtensionContext) {
     extensionContext = context;
 
-    console.log(`Platform: ${process.platform}`);
+    log_debug(`Platform: ${process.platform}`);
 
     if (!is_posix_workspace()) {
         vscode.window.showInformationMessage('Terminal to Clipboard is not supported on Windows yet. Please use WSL.');
