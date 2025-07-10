@@ -1,7 +1,7 @@
 import * as vscode from 'vscode';
 import * as process from 'process';
 
-import { toggle, turnOnIfEnabled, turnOff } from './command';
+import { delete_cody_script, toggle, turnOnIfEnabled, turnOff } from './command';
 import { log_debug } from './util';
 export let extensionContext: vscode.ExtensionContext;
 
@@ -38,6 +38,7 @@ export function activate(context: vscode.ExtensionContext) {
             const input = await vscode.window.showInputBox({ prompt: 'Enter desired alias:' });
             if (input) {
                 await vscode.workspace.getConfiguration('terminal-to-clipboard').update('alias', input, true);
+                delete_cody_script();
                 turnOnIfEnabled(context);
                 vscode.window.showInformationMessage(`Changed terminal-to-clipboard alias to: ${input}`);
             }

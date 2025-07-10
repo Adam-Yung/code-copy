@@ -20,7 +20,7 @@ export function ensureDirectoryExists(path: string) {
  * @param {string} temp_dir The string to replace '___PLACE_HOLDER___' in the script.
  * @returns {Promise<string>} A promise that resolves with the path to the created script, or rejects on error.
  */
-export async function createBashScriptFile(targetDir: string, temp_dir: string, filename: string): Promise<string> {
+export async function createBashScriptFile(targetDir: string, temp_dir: string, filename: string): Promise<string | undefined> {
     const scriptContent = `#!/bin/env bash
 
 _temp_dir="${temp_dir}"

@@ -80,12 +80,6 @@
             "type": "string",
             "default": "cody"
           },
-          "terminal-to-clipboard.aliasForTee": {
-            "title": "Alias (for `tee`)",
-            "description": "Shell function alias (for `tee`)",
-            "type": "string",
-            "default": "tee2code"
-          },
           "terminal-to-clipboard.show_message_popup": {
             "title": "Disabled",
             "description": "Enable/Disable popup info message on copy to clipboard",
