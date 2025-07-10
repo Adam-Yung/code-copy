@@ -43,6 +43,8 @@ export function activate(context: vscode.ExtensionContext) {
             }
           })
     );
+
+    turnOnIfEnabled(context);
 }
 
 export function deactivate(context: vscode.ExtensionContext) {
