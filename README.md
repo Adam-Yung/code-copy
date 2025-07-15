@@ -1,4 +1,4 @@
-# Terminal to Clipboard (cody)
+# Copy From Terminal (cody)
 
 <img src="images/cute_cody.png" alt="Extension Icon" width="150"/>
 
@@ -6,7 +6,7 @@
 
 ℹ️ Major changes to v0.2.0, **NO more flashing code executed on terminal startup!!**  See [Change log](CHANGELOG.md) for details!
 
-### Copy from vscode's integrated terminal to clipboard on any POSIX-compliant system, even over remote-ssh sessions!
+### Copy from vscode's integrated terminal on any POSIX-compliant system, even over remote-ssh sessions!
 ![Capture](images/capture/cody_demo_v0.1.0.gif)
 
 ## Use **`cody`**
@@ -34,7 +34,7 @@ To copy data from the integrated terminal into your local machine's system clipb
 
 ## Toggle ON/OFF
 
-You can toggle ON/OFF the extension via the `Terminal to Clipboard: Toggle (Enable/Disable)` command. You can also do this via the settings UI or JSON file (`terminal-to-clipboard.enabled`).
+You can toggle ON/OFF the extension via the `Copy From Terminal: Toggle (Enable/Disable)` command. You can also do this via the settings UI or JSON file (`terminal-to-clipboard.enabled`).
 
 ## Change alias name
 

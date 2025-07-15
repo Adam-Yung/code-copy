@@ -1,8 +1,8 @@
 {
-  "name": "terminal-to-clipboard",
-  "displayName": "Terminal to Clipboard",
+  "name": "copy-from-terminal",
+  "displayName": "Copy From Terminal",
   "description": "Pipe Terminal Output to Clipboard (Cody)",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "publisher": "ayung",
   "repository": {
     "type": "git",
@@ -48,13 +48,13 @@
   "contributes": {
     "commands": [
       {
-        "command": "terminal-to-clipboard.toggle",
-        "title": "Terminal to Clipboard: Toggle (Enable/Disable)",
+        "command": "copy-from-terminal.toggle",
+        "title": "Copy From Terminal: Toggle (Enable/Disable)",
         "shortTitle": "Toggle"
       },
       {
-        "command": "terminal-to-clipboard.change_alias",
-        "title": "Terminal to Clipboard: Change copy alias",
+        "command": "copy-from-terminal.change_alias",
+        "title": "Copy From Terminal: Change copy alias",
         "shortTitle": "Change Alias"
       }
     ],
@@ -62,25 +62,25 @@
       {
         "title": "Copy to Clipboard From Terminal",
         "properties": {
-          "terminal-to-clipboard.enabled": {
+          "copy-from-terminal.enabled": {
             "title": "Enabled",
             "description": "Enable/Disable Copy To Clipboard From Terminal",
             "type": "boolean",
             "default": true
           },
-          "terminal-to-clipboard.tempDirectory": {
+          "copy-from-terminal.tempDirectory": {
             "title": "Temp directory",
             "description": "Temp directory for storing copied data",
             "type": "string",
             "default": ""
           },
-          "terminal-to-clipboard.alias": {
+          "copy-from-terminal.alias": {
             "title": "Alias",
             "description": "Shell function alias",
             "type": "string",
             "default": "cody"
           },
-          "terminal-to-clipboard.show_message_popup": {
+          "copy-from-terminal.show_message_popup": {
             "title": "Disabled",
             "description": "Enable/Disable popup info message on copy to clipboard",
             "type": "boolean",
