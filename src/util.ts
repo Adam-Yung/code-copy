@@ -1,7 +1,7 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import platform from 'process';
+import * as process from 'process';
 import { Config } from './config';
 
 /**
@@ -79,26 +79,40 @@ export async function renameBashScriptFile(targetDir: string, oldName: string, n
 /**
  * Logging Related Functions
  */
-
-const DEBUG = false; // Set to true to enable debug messages
+const DEBUG_LEVELS = {
+    QUIET: 0,
+    CONSOLE: 1,
+    MESSAGE: 2
+}
+const debug_level = DEBUG_LEVELS.QUIET; // Set to true to enable debug messages
 
 export const log_info = (message: string) => {
     const msg = `${Config.cpAlias}: ${message}`;
-    if (DEBUG) {
-        vscode.window.showInformationMessage(msg);
+    switch (debug_level) {
+        case DEBUG_LEVELS.MESSAGE:
+            vscode.window.showInformationMessage(msg);
+        case DEBUG_LEVELS.CONSOLE:
+            console.log(msg);
+        default:
+            return;
     }
-    console.log(msg);
 };
 export const log_error = (message: string) => {
     const msg = `${Config.cpAlias}: ${message}`;
-    if (DEBUG) {
-        vscode.window.showErrorMessage(msg);
+    switch (debug_level) {
+        case DEBUG_LEVELS.MESSAGE:
+            vscode.window.showErrorMessage(msg);
+        case DEBUG_LEVELS.CONSOLE:
+            console.error(msg);
+        default:
+            return;
     }
-    console.error(msg);
 };
+
 export const log_debug = (message: string) => {
     const msg = `${Config.cpAlias}: ${message}`;
-    console.log(msg);
+    if (debug_level != DEBUG_LEVELS.QUIET)
+        console.log(msg);
 };
 
 export function sleep(ms: number): Promise<void> {
@@ -113,11 +127,11 @@ export let vscode_window_focused: boolean;
 
 export function updateWindowState(state: vscode.WindowState) {
     if (state.focused) {
-        log_info('VS Code window is now focused!');
+        log_debug('VS Code window is now focused!');
         vscode_window_focused = true;
 
     } else {
-        log_info('VS Code window is no longer focused.');
+        log_debug('VS Code window is no longer focused.');
         vscode_window_focused = false;
     }
 }
@@ -126,6 +140,7 @@ export function getWindowState() {
     return vscode_window_focused;
 }
 
+let old_path: string|undefined = undefined;
 
 /**
  * Modify VSCode Integrated Terminal's PATH and add Cody
@@ -143,7 +158,7 @@ export function prepend_path(context: vscode.ExtensionContext): string {
 
     
     // 3. Get the correct configuration setting for the platform
-    const configSection = `terminal.integrated.env.${platform}`;
+    const configSection = `terminal.integrated.env.${process.platform}`;
     const configuration = vscode.workspace.getConfiguration();
     // Get the current environment settings for the terminal, or an empty object
     const currentEnv = configuration.get<{ [key: string]: string }>(configSection, {});
@@ -151,28 +166,75 @@ export function prepend_path(context: vscode.ExtensionContext): string {
     // 4. Prepend your script directory to the PATH
     // We make a copy to avoid modifying the object returned by the configuration
     const newEnv = { ...currentEnv };
+    old_path = newEnv.PATH;
     const existingPath = newEnv.PATH || process.env.PATH || '';
-    
+
+    log_debug(`existingPath: ${existingPath}`);
+
     // Check if existing PATH already has 
     const pathParts = existingPath.split(path.delimiter);
     if (pathParts.includes(customBinDir)) {
-        log_debug("Cody bin already in PATH");
+        log_info("Cody bin already in PATH");
         return customBinDir;
     }
     else {
         if (vscode.window.terminals.length > 0) {
-            vscode.window.showInformationMessage(`${Config.cpAlias}: Please refresh your terminal to use Cody!`);
+            vscode.window.showInformationMessage(`${Config.cpAlias}: Open a new terminal instance to use Cody!`);
         }
     }
+    
     // Use path.delimiter (':' on *nix) to separate paths
     newEnv.PATH = `${customBinDir}${path.delimiter}${existingPath}`;
 
+    log_debug(`New PATH to be added: ${newEnv.PATH}`);
+    
     // 5. Update the configuration for the current workspace
     // This will add the setting to .vscode/settings.json
-    configuration.update(configSection, newEnv, vscode.ConfigurationTarget.Global);
+    configuration.update(configSection, newEnv, vscode.ConfigurationTarget.Global).then(
+        (result) => {
+            log_info(`Cody successfully added to PATH for this workspace: ${result}`);
+        },
+        (error) => {
+            log_error(`Cody failed to add to PATH for this workspace: ${error}`);
+        }
+    )
 
-    log_info('Cody has been added to the integrated terminal PATH for this workspace.');
     return customBinDir;
+}
+
+/**
+ * Remove Cody bin from PATH
+ */
+export function remove_from_path(context: vscode.ExtensionContext, path_str:string): void {
+    if (old_path == undefined)
+        return;
+
+    const configSection = `terminal.integrated.env.${process.platform}`;
+    const configuration = vscode.workspace.getConfiguration();
+    // Get the current environment settings for the terminal, or an empty object
+    const currentEnv = configuration.get<{ [key: string]: string }>(configSection, {});
+
+    // 4. Prepend your script directory to the PATH
+    // We make a copy to avoid modifying the object returned by the configuration
+    const newEnv = { ...currentEnv };
+    const existingPath = newEnv.PATH || '';
+
+    if (!existingPath)
+        return;
+
+    log_debug(`existingPath: ${existingPath}, restoring to ${old_path}`);
+    newEnv.PATH = old_path;
+
+    // This will add the setting to .vscode/settings.json
+    configuration.update(configSection, newEnv, vscode.ConfigurationTarget.Global).then(
+        (result) => {
+            log_info(`Cody restored PATH for this workspace: ${result}`);
+        },
+        (error) => {
+            log_error(`Cody failed to restore PATH for this workspace: ${error}`);
+        }
+    )
+    return;
 }
 
 /**
@@ -180,7 +242,7 @@ export function prepend_path(context: vscode.ExtensionContext): string {
  * @returns The CLI path string, or undefined if not found.
  */
 export function findVSCodeCliPath(context: vscode.ExtensionContext): string | undefined {
-    const configSection = `terminal.integrated.env.${platform}`;
+    const configSection = `terminal.integrated.env.${process.platform}`;
     const configuration = vscode.workspace.getConfiguration();
 
     // Get the current environment settings for the terminal, or an empty object

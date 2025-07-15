@@ -96,7 +96,10 @@ export function turnOff(context: vscode.ExtensionContext) {
     if (cody_tmpdir && fs.existsSync(cody_tmpdir)) {
         fs.rmSync(cody_tmpdir, { recursive: true});
     }
+
     if (cody_bin && cody_bin.includes(context.extensionPath) && fs.existsSync(cody_bin)) {
+        util.log_info("Removing Cody from PATH");
+        util.remove_from_path(context, cody_bin);
         fs.rmSync(cody_bin, { recursive: true});
     }
 
