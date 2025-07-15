@@ -28,19 +28,19 @@ export function activate(context: vscode.ExtensionContext) {
     log_debug(`Platform: ${process.platform}`);
 
     if (!is_posix_workspace()) {
-        vscode.window.showInformationMessage('Terminal to Clipboard is not supported on Windows yet. Please use WSL.');
+        vscode.window.showInformationMessage('Copy From Terminal is not supported on Windows yet. Please use WSL.');
         return;
     }
 
     context.subscriptions.push(
-        vscode.commands.registerCommand('terminal-to-clipboard.toggle', () => toggle(context)),
-        vscode.commands.registerCommand('terminal-to-clipboard.change_alias', async () => {
+        vscode.commands.registerCommand('copy-from-terminal.toggle', () => toggle(context)),
+        vscode.commands.registerCommand('copy-from-terminal.change_alias', async () => {
             const input = await vscode.window.showInputBox({ prompt: 'Enter desired alias:' });
             if (input) {
-                await vscode.workspace.getConfiguration('terminal-to-clipboard').update('alias', input, true);
+                await vscode.workspace.getConfiguration('copy-from-terminal').update('alias', input, true);
                 delete_cody_script();
                 turnOnIfEnabled(context);
-                vscode.window.showInformationMessage(`Changed terminal-to-clipboard alias to: ${input}`);
+                vscode.window.showInformationMessage(`Changed copy-from-terminal alias to: ${input}`);
             }
           })
     );

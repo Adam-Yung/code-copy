@@ -40,7 +40,7 @@ export async function turnOnIfEnabled(context: vscode.ExtensionContext) {
 export async function toggle(context: vscode.ExtensionContext) {
     const newState = !Config.isEnabled;
     newState ? turnOn(context) : turnOff(context);
-    vscode.workspace.getConfiguration('terminal-to-clipboard').update('enabled', newState, true);
+    vscode.workspace.getConfiguration('copy-from-terminal').update('enabled', newState, true);
     util.log_info(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
 }
 
