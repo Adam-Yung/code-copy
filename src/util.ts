@@ -27,6 +27,9 @@ _temp_dir="${temp_dir}"
 
 _get_temp_file() {
     tempfname="$(date +%s)\${RANDOM}.tmp"
+    if [ ! -d "$_temp_dir" ] ; then
+        mkdir -p "$_temp_dir"
+    fi
     echo "$_temp_dir/$tempfname"
 }
 
