@@ -8,6 +8,5 @@ node_modules
 .vscode
 .vscodeignore
 *tmp*
-package-lock.json
 out
 bin
