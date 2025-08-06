@@ -92,12 +92,12 @@
   },
   "scripts": {
     "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
+    "compile": "npm run clean && tsc -p ./",
     "watch": "tsc -watch -p ./",
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "clean": "rm -rf bin out && find . -type f -name '*.vsix' | xargs rm"
+    "clean": "rm -rf bin out '*.vsix'"
   },
   "devDependencies": {
     "@types/vscode": "^1.60.0",
