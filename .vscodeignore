@@ -1,0 +1,29 @@
+# Exclude the source TypeScript files
+src/
+
+# Exclude compilation and config files
+tsconfig.json
+eslint.config.mjs
+
+# Exclude dev dependencies
+node_modules/
+
+# Other standard ignores
+.git/
+.gitignore
+.gitattributes
+
+# Ignore other development-related files
+.vscode/
+*.log
+npm-debug.log*
+yarn-error.log
+vsc-extension-quickstart.md
+README.md
+
+# Ignore OS-specific files
+.DS_Store
+Thumbs.db
+
+# Ignore large gif files
+**/*.gif
