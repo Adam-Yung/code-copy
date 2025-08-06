@@ -169,8 +169,13 @@ export function prepend_path(context: vscode.ExtensionContext): string {
     // 4. Prepend your script directory to the PATH
     // We make a copy to avoid modifying the object returned by the configuration
     const newEnv = { ...currentEnv };
-    old_path = newEnv.PATH;
     const existingPath = newEnv.PATH || process.env.PATH || '';
+    
+    // Store the original path so we can restore it later.
+    if (old_path === undefined) {
+        old_path = existingPath;
+    }
+
 
     log_debug(`existingPath: ${existingPath}`);
 
@@ -208,37 +213,30 @@ export function prepend_path(context: vscode.ExtensionContext): string {
 /**
  * Remove Cody bin from PATH
  */
-export function remove_from_path(context: vscode.ExtensionContext, path_str:string): void {
-    if (old_path == undefined)
-        return;
+export function remove_from_path(context: vscode.ExtensionContext): void {
+    if (old_path === undefined) {
+        return; // Nothing to restore
+    }
 
     const configSection = `terminal.integrated.env.${process.platform}`;
     const configuration = vscode.workspace.getConfiguration();
-    // Get the current environment settings for the terminal, or an empty object
     const currentEnv = configuration.get<{ [key: string]: string }>(configSection, {});
-
-    // 4. Prepend your script directory to the PATH
-    // We make a copy to avoid modifying the object returned by the configuration
     const newEnv = { ...currentEnv };
-    const existingPath = newEnv.PATH || '';
 
-    if (!existingPath)
-        return;
-
-    log_debug(`existingPath: ${existingPath}, restoring to ${old_path}`);
+    log_debug(`Restoring PATH to: ${old_path}`);
     newEnv.PATH = old_path;
 
-    // This will add the setting to .vscode/settings.json
     configuration.update(configSection, newEnv, vscode.ConfigurationTarget.Global).then(
-        (result) => {
-            log_info(`Cody restored PATH for this workspace: ${result}`);
+        () => {
+            log_info("Successfully restored PATH.");
+            old_path = undefined; // Clear the stored path after restoring
         },
         (error) => {
-            log_error(`Cody failed to restore PATH for this workspace: ${error}`);
+            log_error(`Failed to restore PATH: ${error}`);
         }
-    )
-    return;
+    );
 }
+
 
 /**
  * Finds the dynamic path to the VS Code Server remote CLI.
