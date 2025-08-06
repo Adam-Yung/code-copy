@@ -2,6 +2,17 @@
 # Change Log
 All notable changes to CODY will be documented in this file.
 
+## [1.0.0] - 06/08/2025
+
+First stable Cody version
+ 
+### Changed
+- Added FileSystemWatcher and StatusBarItem to context.subscriptions to prevent premature cleanup
+- Grouped all global variables into one extension state for better code readability in `commands.ts`
+
+### Fixed
+- Cody stops working sporadically in windows held open for a couple of days
+
 ## [0.2.0] - 10/07/2025
   
 Cody is in BETA
