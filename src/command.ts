@@ -1,135 +1,112 @@
 import * as fs from 'fs';
 import * as path from 'path';
-
 import * as vscode from 'vscode';
+import { tmpdir } from 'os';
 
 import { Config } from './config';
 import * as util from './util';
 import { makeWatcher } from './watcher';
-import { extensionContext } from './extension';
-import { tmpdir } from 'os';
 
-
-/**
- * Logic for Cody:
- * Prepend extension path to shell's PATH env. variable
- * Add a script called "cp_alias" to extension path
- * In file watcher, check for new files
- * If window is active, show status message notification
- */
-
-
-let cody_tmpdir:string | undefined;
-let cody_bin:string | undefined;
-let cody_script:string | undefined;
-
-let _watcher: vscode.FileSystemWatcher | undefined;
-
-interface CopyInfo {
-    timeoutId: NodeJS.Timeout | undefined;
-    statusBarItem: vscode.StatusBarItem | undefined;
+// Encapsulate state to reduce global variables
+interface ExtensionState {
+    cody_tmpdir?: string;
+    cody_bin?: string;
+    cody_script_path?: string;
+    statusBarItem?: vscode.StatusBarItem;
+    copyTimeoutId?: NodeJS.Timeout;
 }
-let copy_info: CopyInfo;
+
+let state: ExtensionState = {};
 
 export async function turnOnIfEnabled(context: vscode.ExtensionContext) {
     if (Config.isEnabled) {
-        turnOn(context);
+        await turnOn(context);
     }
 }
 
 export async function toggle(context: vscode.ExtensionContext) {
     const newState = !Config.isEnabled;
-    newState ? turnOn(context) : turnOff(context);
-    vscode.workspace.getConfiguration('copy-from-terminal').update('enabled', newState, true);
+    await vscode.workspace.getConfiguration('copy-from-terminal').update('enabled', newState, vscode.ConfigurationTarget.Global);
+
+    if (newState) {
+        await turnOn(context);
+    } else {
+        turnOff(context);
+    }
+
     util.log_info(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
 }
 
 export async function turnOn(context: vscode.ExtensionContext) {
-    cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
-    const cpAlias = Config.cpAlias;
-
-    // Subscribe to window state changes
-    vscode.window.onDidChangeWindowState(e => {
-        util.updateWindowState(e);
-    });
-
+    state.cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
+    
+    // Subscribe to window state changes and add the disposable to subscriptions
+    context.subscriptions.push(vscode.window.onDidChangeWindowState(util.updateWindowState));
     util.updateWindowState(vscode.window.state);
 
-
     // Create temp dir to store the piped results
-    util.log_info(`Cody: Using temp directory "${cody_tmpdir}"`);
-    util.ensureDirectoryExists(cody_tmpdir);
-
+    util.log_info(`Cody: Using temp directory "${state.cody_tmpdir}"`);
+    util.ensureDirectoryExists(state.cody_tmpdir);
 
     // Create bin dir for cody command
-    cody_bin = util.findVSCodeCliPath(context);
-    if (cody_bin) {
-        util.log_info(`Cody bin added to path: ${cody_bin}`);
-    }
-    else {
+    state.cody_bin = util.findVSCodeCliPath(context);
+    if (!state.cody_bin) {
         util.log_error("Cody bin cannot be added to PATH!");
         return;
     }
+    util.log_info(`Cody bin added to path: ${state.cody_bin}`);
+    
     // Create cody script
-    cody_script = await util.createBashScriptFile(cody_bin, cody_tmpdir, Config.cpAlias);
+    state.cody_script_path = await util.createBashScriptFile(state.cody_bin, state.cody_tmpdir, Config.cpAlias);
 
     // Create Status Bar Item for Notifications
-    const statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
-    copy_info = { timeoutId: undefined, statusBarItem };
+    state.statusBarItem = vscode.window.createStatusBarItem(vscode.StatusBarAlignment.Right, 999);
+    context.subscriptions.push(state.statusBarItem); // Manage status bar item lifecycle
 
     // Start watching for newly created files in tmp_dir
-    watch(context, cody_tmpdir);
+    watch(context, state.cody_tmpdir);
 }
 
 export function delete_cody_script() {
     // Remove old cody script
-    if (cody_script && fs.existsSync(cody_script)) {
-        fs.rmSync(cody_script);
+    if (state.cody_script_path && fs.existsSync(state.cody_script_path)) {
+        fs.rmSync(state.cody_script_path);
+        state.cody_script_path = undefined;
     }
 }
 
 export function turnOff(context: vscode.ExtensionContext) {
     util.log_info(`Turning off Cody...`);
-    disposeWatcher();
 
-    // Remove temporary directories
-    // if (cody_tmpdir && fs.existsSync(cody_tmpdir)) {
-    //     fs.rmSync(cody_tmpdir, { recursive: true});
-    // }
+    // The watcher and status bar item are now managed by context.subscriptions,
+    // so they will be disposed automatically. We just need to clear our state.
 
-    if (cody_bin && cody_bin.includes(context.extensionPath) && fs.existsSync(cody_bin)) {
+    if (state.copyTimeoutId) {
+        clearTimeout(state.copyTimeoutId);
+    }
+
+    // Clean up files and PATH
+    if (state.cody_bin && state.cody_bin.includes(context.extensionPath) && fs.existsSync(state.cody_bin)) {
         util.log_info("Removing Cody from PATH");
-        util.remove_from_path(context, cody_bin);
-        fs.rmSync(cody_bin, { recursive: true});
+        util.remove_from_path(context);
+        fs.rmSync(state.cody_bin, { recursive: true});
     }
 
     delete_cody_script();
-
-    // Remove Status Bar Notifications
-    if (copy_info) {
-        if (copy_info.timeoutId) {
-            clearTimeout(copy_info.timeoutId);
-        }
-        if (copy_info.statusBarItem) {    
-            copy_info.statusBarItem.dispose();
-            copy_info.statusBarItem = undefined;
-        }
-    }
+    
+    // Reset state object
+    state = {};
 }
 
-
 function watch(context: vscode.ExtensionContext, tmpdir: string) {
-    // disposeWatcher();
-
-    let { watcher } = makeWatcher(tmpdir);
+    const watcher = makeWatcher(tmpdir);
 
     watcher.onDidCreate(async (uri) => {
-        if (!util.getWindowState()) {   /** Only do work on the focused window */
+        if (!util.getWindowState()) { // Only do work on the focused window
             return;
         }
 
         const filepath = uri.fsPath;
- 
         let fileContent = await fs.promises.readFile(filepath, 'utf-8');
         fileContent = fileContent.trim();
 
@@ -140,34 +117,25 @@ function watch(context: vscode.ExtensionContext, tmpdir: string) {
             fileContent = fileContent.substring(0, message_length) + '...';
             fileContent = fileContent.replace(/[\r\n\t]/g, ' ');
         }
+
         if (Config.show_popup) {
             vscode.window.showInformationMessage('📋: ' + fileContent);
-        } else {
-            let statusBarItem = copy_info.statusBarItem;
-            if (statusBarItem) {
-                let timeoutId = copy_info.timeoutId;
-                if (timeoutId) {
-                    clearTimeout(timeoutId);
-                }
-                
-                statusBarItem.text = '📋: ' + fileContent;
-                statusBarItem.tooltip = Config.cpAlias + ': copied to clipboard';
-                statusBarItem.show();
-
-                timeoutId = setTimeout(() => {
-                    if (statusBarItem) {
-                        statusBarItem.hide();
-                        statusBarItem.text = '';
-                    }
-                }, 3000);
+        } else if (state.statusBarItem) {
+            if (state.copyTimeoutId) {
+                clearTimeout(state.copyTimeoutId);
             }
-        //    vscode.window.setStatusBarMessage('📋: ' + fileContent, 3000);
+            
+            state.statusBarItem.text = '📋: ' + fileContent;
+            state.statusBarItem.tooltip = `${Config.cpAlias}: copied to clipboard`;
+            state.statusBarItem.show();
+
+            state.copyTimeoutId = setTimeout(() => {
+                state.statusBarItem?.hide();
+            }, 3000);
         }
     });
-    _watcher = watcher;
-}
 
-function disposeWatcher() {
-    _watcher?.dispose();
-    _watcher = undefined;
+    // *** CRITICAL CHANGE ***
+    // Add the watcher to the extension's subscriptions to let VS Code manage its lifecycle.
+    context.subscriptions.push(watcher);
 }
