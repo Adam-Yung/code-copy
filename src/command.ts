@@ -49,7 +49,7 @@ export async function turnOn(context: vscode.ExtensionContext) {
     util.ensureDirectoryExists(state.cody_tmpdir);
 
     // Create bin dir for cody command
-    state.cody_bin = util.findVSCodeCliPath(context);
+    state.cody_bin = await util.findVSCodeCliPath(context);
     if (!state.cody_bin) {
         util.log_error("Cody bin cannot be added to PATH!");
         return;
@@ -88,7 +88,7 @@ export function turnOff(context: vscode.ExtensionContext) {
     // Clean up files and PATH
     if (state.cody_bin && state.cody_bin.includes(context.extensionPath) && fs.existsSync(state.cody_bin)) {
         util.log_info("Removing Cody from PATH");
-        util.remove_from_path(context);
+        util.remove_from_path();
         fs.rmSync(state.cody_bin, { recursive: true});
     }
 

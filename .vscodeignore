@@ -27,3 +27,10 @@ Thumbs.db
 
 # Ignore large gif files
 **/*.gif
+
+# Ignore all PNG files, regardless of location
+**/*.png
+!images/cody.png
+
+# Ignore README files
+**/README.md
