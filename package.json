@@ -43,7 +43,7 @@
   "activationEvents": [
     "onStartupFinished"
   ],
-  "icon": "images/cute_cody_no_bg.png",
+  "icon": "images/cody.png",
   "main": "./out/extension.js",
   "contributes": {
     "commands": [
