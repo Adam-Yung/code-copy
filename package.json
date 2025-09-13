@@ -2,7 +2,7 @@
   "name": "terminal-to-clipboard",
   "displayName": "Copy From Terminal",
   "description": "Pipe Terminal Output to Clipboard (Cody)",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "publisher": "ayung",
   "repository": {
     "type": "git",
@@ -97,7 +97,7 @@
     "pretest": "npm run compile && npm run lint",
     "lint": "eslint src --ext ts",
     "test": "node ./out/test/runTest.js",
-    "clean": "rm -rf bin out '*.vsix'"
+    "clean": "rm -rf bin out *.vsix"
   },
   "devDependencies": {
     "@types/vscode": "^1.60.0",
