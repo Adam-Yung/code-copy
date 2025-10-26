@@ -89,7 +89,7 @@ const DEBUG_LEVELS = {
     CONSOLE: 1,
     MESSAGE: 2,
 };
-const debug_level = DEBUG_LEVELS.CONSOLE; // Set your desired debug level here
+const debug_level = DEBUG_LEVELS.QUIET;
 
 export const log_info = (message: string) => {
     const msg = `${Config.cpAlias}: ${message}`;

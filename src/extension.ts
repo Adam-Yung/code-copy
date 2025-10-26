@@ -7,7 +7,7 @@ import { utils } from 'mocha';
 export let extensionContext: vscode.ExtensionContext;
 
 export function is_posix_workspace(): boolean {
-    return process.platform === 'win32'
+    return process.platform !== 'win32'
 }
 
 export async function activate(context: vscode.ExtensionContext) {
