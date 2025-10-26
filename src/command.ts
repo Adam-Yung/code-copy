@@ -54,6 +54,7 @@ export async function turnOn(context: vscode.ExtensionContext) {
         util.log_error("Cody bin cannot be added to PATH!");
         return;
     }
+    
     util.log_info(`Cody bin added to path: ${state.cody_bin}`);
     
     // Create cody script
@@ -78,18 +79,8 @@ export function delete_cody_script() {
 export function turnOff(context: vscode.ExtensionContext) {
     util.log_info(`Turning off Cody...`);
 
-    // The watcher and status bar item are now managed by context.subscriptions,
-    // so they will be disposed automatically. We just need to clear our state.
-
     if (state.copyTimeoutId) {
         clearTimeout(state.copyTimeoutId);
-    }
-
-    // Clean up files and PATH
-    if (state.cody_bin && state.cody_bin.includes(context.extensionPath) && fs.existsSync(state.cody_bin)) {
-        util.log_info("Removing Cody from PATH");
-        util.remove_from_path();
-        fs.rmSync(state.cody_bin, { recursive: true});
     }
 
     delete_cody_script();

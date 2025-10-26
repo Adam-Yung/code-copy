@@ -4,9 +4,7 @@
 
 ℹ️ Forked from [Copy/Pipe From Terminal](https://github.com/babakks/vscode-copy-from-terminal)
 
-ℹ️ Major changes to v0.2.0, **NO more flashing code executed on terminal startup!!**  See [Change log](CHANGELOG.md) for details!
-
-### Copy from vscode's integrated terminal on any POSIX-compliant system, even over remote-ssh sessions!
+### Copy to System Clipboard over remote-ssh sessions from VSCode's Integrated Terminal!
 ![Capture](images/capture/cody_demo_v0.1.0.gif)
 
 ## Use **`cody`**
@@ -58,4 +56,4 @@ In the cody repository, assuming you have **`npm`** installed, run the following
 
 3. Press F5 in VSCode with [extension.ts](src/extension.ts) open in editor, and choose **`VSCode Extension Development`**
 
-⚠️ **For now, this extension is just available for UNIX-compatible systems (Linux & macOS).**
+⚠️ **For now, this extension is just available for UNIX-compatible systems (Tested on Linux & macOS).**
