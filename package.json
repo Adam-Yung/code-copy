@@ -2,7 +2,7 @@
   "name": "terminal-to-clipboard",
   "displayName": "Copy From Terminal",
   "description": "Pipe Terminal Output to Clipboard (Cody)",
-  "version": "1.0.1",
+  "version": "1.0.2",
   "publisher": "ayung",
   "repository": {
     "type": "git",
