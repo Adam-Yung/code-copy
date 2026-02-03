@@ -1,7 +1,6 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import * as process from 'process';
 import { Config } from './config';
 
 /**
@@ -58,27 +57,6 @@ echo "$output" > "$(_get_temp_file)"
 }
 
 /**
- * Renames a bash script file.
- * @param targetDir The directory where the script is located.
- * @param oldName The current name of the script file.
- * @param newName The new name for the script file.
- * @returns A promise that resolves with the new path of the script.
- */
-export async function renameBashScriptFile(targetDir: string, oldName: string, newName: string): Promise<string> {
-    const oldPath = path.join(targetDir, oldName);
-    const newPath = path.join(targetDir, newName);
-
-    try {
-        await fs.promises.rename(oldPath, newPath);
-        log_debug(`Successfully renamed script from ${oldPath} to ${newPath}`);
-        return newPath;
-    } catch (error: any) {
-        log_error(`Error renaming script file: ${error.message}`);
-        throw error;
-    }
-}
-
-/**
  * ---------------------------------
  * Logging Utilities
  * ---------------------------------
@@ -119,37 +97,15 @@ export const log_debug = (message: string) => {
 
 /**
  * ---------------------------------
- * VS Code State & General Utilities
- * ---------------------------------
- */
-
-export function sleep(ms: number): Promise<void> {
-    return new Promise(resolve => setTimeout(resolve, ms));
-}
-
-export let vscode_window_focused: boolean = true; // Default to true
-
-export function updateWindowState(state: vscode.WindowState) {
-    vscode_window_focused = state.focused;
-    log_debug(`VS Code window focused: ${vscode_window_focused}`);
-}
-
-export function getWindowState() {
-    return vscode_window_focused;
-}
-
-/**
- * ---------------------------------
  * VS Code Terminal PATH Configuration
  * ---------------------------------
  */
 
-
 /**
  * Finds the dynamic path to the VS Code Server remote CLI.
- * @returns The CLI path string, or the newly prepended bin path if not in a remote session.
+ * @returns The CLI path string.
  */
-export async function findVSCodeCliPath(context: vscode.ExtensionContext): Promise<string | undefined> {
+export async function findVSCodeCliPath(): Promise<string | undefined> {
     const terminalPath = process.env.PATH;
     log_debug(`process.env.PATH: ${terminalPath}`);
 
@@ -157,6 +113,7 @@ export async function findVSCodeCliPath(context: vscode.ExtensionContext): Promi
 
     const pathEntries = terminalPath.split(path.delimiter);
 
+    // Heuristic to find the remote-cli path injected by VS Code Server
     const cliPath = pathEntries.find(p =>
         p.includes('.vscode-server') && p.includes('/bin/remote-cli')
     );
