@@ -42,8 +42,8 @@ export async function activate(context: vscode.ExtensionContext) {
     await turnOnIfEnabled(context);
 }
 
-export function deactivate(context: vscode.ExtensionContext) {
+export async function deactivate(context: vscode.ExtensionContext) {
     if (is_posix_workspace()) {
-        turnOff();
+        await turnOff();
     }
 }

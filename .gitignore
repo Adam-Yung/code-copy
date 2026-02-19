@@ -7,5 +7,6 @@ node_modules
 *.log
 .vscode/
 *tmp*
+*.zip
 out
 bin

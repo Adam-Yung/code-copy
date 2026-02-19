@@ -9,10 +9,9 @@ import { Config } from './config';
  * ---------------------------------
  */
 
-export function ensureDirectoryExists(directoryPath: string) {
-    if (!fs.existsSync(directoryPath)) {
-        fs.mkdirSync(directoryPath, { recursive: true });
-    }
+export async function ensureDirectoryExists(directoryPath: string) {
+    // recursive: true ensures no error if it already exists
+    await fs.promises.mkdir(directoryPath, { recursive: true });
 }
 
 /**
@@ -45,7 +44,7 @@ echo "$output" > "$(_get_temp_file)"
     const scriptPath = path.join(targetDir, filename);
 
     try {
-        await fs.promises.mkdir(targetDir, { recursive: true });
+        await ensureDirectoryExists(targetDir);
         await fs.promises.writeFile(scriptPath, scriptContent);
         await fs.promises.chmod(scriptPath, 0o755); // rwxr-xr-x permissions
         log_debug(`Successfully created script: ${scriptPath}`);

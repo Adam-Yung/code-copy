@@ -2,6 +2,22 @@
 # Change Log
 All notable changes to CODY will be documented in this file.
 
+## [1.0.4] - 18/02/2026
+
+Fix temp_dir naming conflict issue
+ 
+### Fixed
+- When more than one user installs cody extension on one machine, they share the same temp_dir (/tmp/extension-id), which causes permission issues
+
+
+## [1.0.3] - 03/02/2026
+
+Fix persisting cody command fail after prolonged idle window issue
+ 
+### Fixed
+- Add logic on VSCode window state change, to essentially refresh the extension
+
+
 ## [1.0.0] - 06/08/2025
 
 First stable Cody version

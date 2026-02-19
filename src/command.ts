@@ -1,7 +1,8 @@
 import * as fs from 'fs';
 import * as path from 'path';
 import * as vscode from 'vscode';
-import { tmpdir } from 'os';
+import * as crypto from 'crypto';
+import { tmpdir, userInfo } from 'os';
 
 import { Config } from './config';
 import * as util from './util';
@@ -23,11 +24,18 @@ export async function onWindowStateChanged(windowState: vscode.WindowState, cont
     // If the window was idle, the VS Code Server might have restarted or cleaned up 
     // the temporary directory where the cody script lives.
     // If we are focused and enabled, verify the script exists. If not, restore it.
-    if (windowState.focused && Config.isEnabled) {
-        if (state.cody_script_path && !fs.existsSync(state.cody_script_path)) {
+    if (windowState.focused && Config.isEnabled && state.cody_script_path) {
+        try {
+            await fs.promises.access(state.cody_script_path);
+        } catch {
+            // File access failed (does not exist or no permission), restore it
             util.log_info("Cody script was removed (idle cleanup detected). Restoring...");
             await turnOff();
-            await turnOn(context);
+            try {
+                await turnOn(context);
+            } catch (error) {
+                util.log_error(`Failed to restore Cody script: ${error}`);
+            }
         }
     }
 }
@@ -45,18 +53,35 @@ export async function toggle(context: vscode.ExtensionContext) {
     if (newState) {
         await turnOn(context);
     } else {
-        turnOff();
+        await turnOff();
     }
 
     util.log_info(`The extension is now ${newState ? 'enabled' : 'disabled'}.`);
 }
 
 export async function turnOn(context: vscode.ExtensionContext) {
-    state.cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), context.extension.id));
+    // Determine current username safely to avoid permission issues in shared /tmp
+    let username: string;
+    try {
+        username = userInfo().username;
+    } catch (error) {
+        // Fallback: Use env var or generate a random suffix to ensure uniqueness
+        const envUser = process.env.USER || process.env.USERNAME;
+        const randomSuffix = crypto.randomBytes(4).toString('hex');
+        username = envUser || `user_${randomSuffix}`;
+    }
+
+    // Sanitize username to ensure valid directory name
+    username = username.replace(/[^a-zA-Z0-9._-]/g, '_');
+
+    // Use extension name and username for the temp directory
+    const folderName = `vscode-terminal-to-clipboard-${username}`;
+    state.cody_tmpdir = path.resolve(Config.tempDirectory || path.join(tmpdir(), folderName));
 
     // Create temp dir to store the piped results
     util.log_info(`Cody: Using temp directory "${state.cody_tmpdir}"`);
-    util.ensureDirectoryExists(state.cody_tmpdir);
+    // Ensure directory exists (async)
+    await util.ensureDirectoryExists(state.cody_tmpdir);
 
     // Find bin dir for cody command
     state.cody_bin = await util.findVSCodeCliPath();
@@ -78,19 +103,21 @@ export async function turnOn(context: vscode.ExtensionContext) {
     watch(context, state.cody_tmpdir);
 }
 
-export function delete_cody_script() {
+export async function delete_cody_script() {
     // Remove old cody script
-    if (state.cody_script_path && fs.existsSync(state.cody_script_path)) {
+    if (state.cody_script_path) {
         try {
-            fs.rmSync(state.cody_script_path);
+            // Use force: true to ignore errors if file doesn't exist (equivalent to rm -f)
+            await fs.promises.rm(state.cody_script_path, { force: true, recursive: true });
         } catch (e) {
-            // Ignore deletion errors if file is already gone
+            // Log debug if needed, but generally safe to ignore cleanup errors
+            util.log_debug(`Error deleting cody script: ${e}`);
         }
         state.cody_script_path = undefined;
     }
 }
 
-export function turnOff() {
+export async function turnOff() {
     util.log_info(`Turning off Cody...`);
 
     if (state.copyTimeoutId) {
@@ -105,7 +132,8 @@ export function turnOff() {
         state.watcher.dispose();
     }
 
-    delete_cody_script();
+    // Async deletion
+    await delete_cody_script();
     
     // Reset state object
     state = {};
